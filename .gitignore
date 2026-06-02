@@ -1,0 +1,56 @@
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python build artifacts
+*.egg-info/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.uv-cache/
+
+# Virtual environment
+.venv/
+
+# Dependencies
+frontend/node_modules/
+node_modules/
+
+# Build output
+frontend/dist/
+
+# Local Claude config
+.claude/settings.local.json
+
+# Test scratch
+.test_tmp/
+tmp/
+
+# Temporary files (if you create a specific dir)
+temp_audio/
+
+# Codex/Claude skill data (unrelated to this project)
+.codex/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+.streamlit/secrets.toml
+
+# All local data (DB, session audio, transcripts, embeddings — PII)
+data/
+
+# Loose media / PII in repo root — keep designated presentation examples
+*.wav
+*.mp3
+!Test_Kunde_Handwerker.wav
+!transcibio.mp3
+
+# VAD assets (regenerated from node_modules via frontend postinstall)
+frontend/public/vad/

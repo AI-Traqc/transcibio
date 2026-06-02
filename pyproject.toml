@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "transcibio"
+version = "0.1.0"
+description = "Local-first audio transcription and assistant (FastAPI + React)."
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.34,<1",
+    "python-multipart>=0.0.20,<1",
+    "python-dotenv",
+    "faster-whisper>=1.1,<2",
+    "pyannote.audio==4.0.4",
+    "torch==2.8.0",
+    "torchaudio==2.8.0",
+    "torchvision==0.23.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.5",
+    "ruff==0.11.5",
+]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu128", marker = "(platform_system == 'Windows' or platform_system == 'Linux') and (platform_machine == 'AMD64' or platform_machine == 'x86_64')" },
+]
+torchaudio = [
+    { index = "pytorch-cu128", marker = "(platform_system == 'Windows' or platform_system == 'Linux') and (platform_machine == 'AMD64' or platform_machine == 'x86_64')" },
+]
+torchvision = [
+    { index = "pytorch-cu128", marker = "(platform_system == 'Windows' or platform_system == 'Linux') and (platform_machine == 'AMD64' or platform_machine == 'x86_64')" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.setuptools.packages.find]
+include = ["backend*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency-injection markers are designed to be called in defaults
+# (e.g. `x: T = Depends(...)`), so B008 does not apply to them.
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.File",
+    "fastapi.Form",
+    "fastapi.Query",
+    "fastapi.Body",
+    "fastapi.Path",
+    "fastapi.Header",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

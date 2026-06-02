@@ -1,0 +1,33 @@
+# Build context hygiene for the backend image (context = repo root).
+# The backend Dockerfile only copies pyproject.toml + backend/, but keeping the
+# context small speeds up `docker build` and prevents model weights / the SQLite
+# DB from ever being baked into an image layer.
+
+**/__pycache__
+**/*.pyc
+**/.venv
+.venv
+
+# Large, gitignored runtime data: DB, session audio, downloaded model weights.
+# These belong in the mounted ./data volume, never in the image.
+data/
+**/*.db
+
+# Frontend is built from its own context (./frontend) with its own .dockerignore.
+frontend/
+node_modules/
+
+# Tooling / VCS / editor noise
+**/.git
+**/.gitignore
+**/.dockerignore
+**/.vscode
+**/.vs
+**/.idea
+**/.pytest_cache
+**/.ruff_cache
+docker-compose*.yml
+Dockerfile*
+LICENSE
+readme.md
+README.md

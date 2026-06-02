@@ -1,0 +1,56 @@
+# One-command full stack: `docker compose up --build`
+#
+#   frontend (nginx)  ->  http://localhost:8080   serves the UI + proxies /api
+#   backend  (FastAPI/uvicorn, GPU)               internal :8000
+#   Ollama / LM Studio                            reached on the HOST
+#
+# GPU note: the backend requests an NVIDIA GPU (see `deploy` below), which needs
+# the nvidia-container-toolkit on the host (Linux native, or Windows via the
+# WSL2 Docker backend). On a machine without a GPU, run the CPU override instead:
+#   docker compose -f docker-compose.yml -f docker-compose.cpu.yml up --build
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: transcibio-backend
+    # Load HF_TOKEN, model overrides, etc. from .env if it exists (optional).
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Listen on all interfaces so the frontend container can reach the API.
+      TRANSCIBIO_API_HOST: "0.0.0.0"
+      # Talk to Ollama / LM Studio running on the host machine. All three URLs
+      # must point at the host: chat/generate drive replies, and tags is what the
+      # Settings panel uses to list models / show reachability.
+      TRANSCIBIO_OLLAMA_CHAT_URL: "http://host.docker.internal:11434/api/chat"
+      TRANSCIBIO_OLLAMA_GENERATE_URL: "http://host.docker.internal:11434/api/generate"
+      TRANSCIBIO_OLLAMA_TAGS_URL: "http://host.docker.internal:11434/api/tags"
+    # Make host.docker.internal resolve to the host on Linux too.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # DB, session audio, Kokoro/whisper weights, HF cache persist here.
+      - ./data:/app/data
+    # Request all NVIDIA GPUs (requires nvidia-container-toolkit on the host).
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: transcibio-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

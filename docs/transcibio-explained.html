@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Transcibio — How It Works</title>
+<style>
+  /* ============================================================
+     Transcibio Explainer — single-file, offline, beginner-friendly
+     ============================================================ */
+  :root {
+    --bg:        #0e1117;
+    --bg-soft:   #161b24;
+    --bg-card:   #1b212c;
+    --bg-card-2: #212936;
+    --line:      #2b3340;
+    --line-soft: #232a35;
+    --text:      #e6edf3;
+    --text-dim:  #9aa7b6;
+    --text-mute: #66727f;
+    --accent:    #6ee7b7; /* privacy green */
+    --accent-2:  #7aa2ff; /* signal blue */
+    --accent-3:  #fbbf77; /* warm amber */
+    --accent-4:  #f0a4c0; /* coral */
+    --danger:    #ff8b8b;
+    --radius:    14px;
+    --radius-sm: 9px;
+    --maxw:      1100px;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(900px 500px at 12% -5%, rgba(110,231,183,.10), transparent 60%),
+      radial-gradient(800px 500px at 95% 0%, rgba(122,162,255,.10), transparent 55%),
+      radial-gradient(700px 600px at 50% 110%, rgba(240,164,192,.06), transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  a { color: var(--accent-2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: var(--mono);
+    background: #0c1f1a;
+    color: var(--accent);
+    padding: 1px 6px; border-radius: 6px; font-size: .86em;
+    border: 1px solid #1d3b32;
+  }
+  h2 { font-size: clamp(1.5rem, 3.2vw, 2.2rem); margin: 0 0 .3em; letter-spacing: -.02em; }
+  h3 { font-size: 1.18rem; margin: 1.4em 0 .4em; letter-spacing: -.01em; }
+  p  { color: var(--text-dim); }
+  strong { color: var(--text); font-weight: 600; }
+
+  /* ---------- Top nav ---------- */
+  nav.top {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(14,17,23,.82);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  nav.top .wrap { display: flex; align-items: center; gap: 22px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.02em; font-size: 1.05rem; }
+  .brand .dot {
+    width: 22px; height: 22px; border-radius: 7px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 16px rgba(110,231,183,.5);
+    display: grid; place-items: center; color: #06231b; font-weight: 900; font-size: .8rem;
+  }
+  .navlinks { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+  .navlinks a {
+    color: var(--text-dim); font-size: .86rem; font-weight: 500;
+    padding: 6px 11px; border-radius: 8px; transition: .15s;
+  }
+  .navlinks a:hover { color: var(--text); background: var(--bg-card); text-decoration: none; }
+  .navlinks a.active { color: var(--accent); background: rgba(110,231,183,.10); }
+  @media (max-width: 820px) { .navlinks { display: none; } }
+
+  /* ---------- Hero ---------- */
+  header.hero { padding: 76px 0 50px; text-align: center; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid var(--line); background: var(--bg-card);
+    color: var(--accent); font-size: .8rem; font-weight: 600;
+    padding: 6px 14px; border-radius: 999px; margin-bottom: 22px;
+  }
+  .badge .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 rgba(110,231,183,.6); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(110,231,183,.5);} 70%{box-shadow:0 0 0 9px rgba(110,231,183,0);} 100%{box-shadow:0 0 0 0 rgba(110,231,183,0);} }
+  header.hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4rem); margin: 0 0 .25em; line-height: 1.04; letter-spacing: -.035em;
+    background: linear-gradient(180deg, #fff, #b6c4d4);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  header.hero .tag { font-size: clamp(1.05rem, 2.3vw, 1.32rem); color: var(--text-dim); max-width: 720px; margin: 0 auto 14px; }
+  .hero-meta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+  .chip {
+    font-size: .82rem; color: var(--text-dim);
+    border: 1px solid var(--line); background: var(--bg-soft);
+    padding: 7px 14px; border-radius: 999px;
+  }
+  .chip b { color: var(--accent-3); font-weight: 600; }
+
+  /* ---------- Sections ---------- */
+  section { padding: 54px 0; border-top: 1px solid var(--line-soft); }
+  .eyebrow { color: var(--accent-2); font-weight: 700; font-size: .82rem; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; }
+  .lead { font-size: 1.08rem; max-width: 760px; }
+
+  /* ---------- Cards / grids ---------- */
+  .grid { display: grid; gap: 16px; margin-top: 28px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 860px) { .g3, .g4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .g2, .g3, .g4 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--bg-card); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px; transition: .2s;
+  }
+  .card:hover { border-color: #3a4555; transform: translateY(-2px); }
+  .card .ico { font-size: 1.5rem; margin-bottom: 8px; display: block; }
+  .card h4 { margin: 0 0 6px; font-size: 1.02rem; }
+  .card p { margin: 0; font-size: .9rem; color: var(--text-dim); }
+
+  .pill { font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; display: inline-block; }
+  .pill.be { background: rgba(122,162,255,.14); color: var(--accent-2); }
+  .pill.fe { background: rgba(110,231,183,.14); color: var(--accent); }
+  .pill.opt { background: rgba(251,191,119,.14); color: var(--accent-3); }
+
+  /* ---------- Technique accordion ---------- */
+  .tech { background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-top: 14px; }
+  .tech > button {
+    width: 100%; text-align: left; background: none; border: none; color: var(--text);
+    padding: 16px 20px; font-size: 1.02rem; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 12px; font-family: inherit;
+  }
+  .tech > button:hover { background: var(--bg-card-2); }
+  .tech > button .tnum { color: var(--accent); font-family: var(--mono); font-size: .85rem; }
+  .tech > button .caret { margin-left: auto; transition: .25s; color: var(--text-mute); }
+  .tech.open > button .caret { transform: rotate(90deg); }
+  .tech .body { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+  .tech.open .body { max-height: 320px; }
+  .tech .body-in { padding: 0 20px 18px; color: var(--text-dim); font-size: .94rem; border-top: 1px solid var(--line-soft); padding-top: 14px; }
+  .tech .body-in .why { color: var(--accent-3); font-weight: 600; font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; display:block; margin-bottom:4px; }
+
+  /* ---------- Architecture explorer ---------- */
+  .tabs { display: flex; gap: 8px; margin: 26px 0 0; flex-wrap: wrap; }
+  .tabs button {
+    font-family: inherit; font-size: .9rem; font-weight: 600; cursor: pointer;
+    background: var(--bg-card); color: var(--text-dim); border: 1px solid var(--line);
+    padding: 9px 16px; border-radius: 10px; transition: .15s;
+  }
+  .tabs button:hover { color: var(--text); }
+  .tabs button.active { background: var(--accent); color: #06231b; border-color: var(--accent); }
+  .tabpanel { display: none; margin-top: 22px; animation: fade .35s ease; }
+  .tabpanel.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+
+  .layer {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: linear-gradient(180deg, var(--bg-card), var(--bg-soft));
+    padding: 16px 18px; margin-bottom: 12px;
+  }
+  .layer h4 { margin: 0 0 4px; font-size: .98rem; display: flex; align-items: center; gap: 8px; }
+  .layer h4 .lt { font-family: var(--mono); font-size: .72rem; color: var(--text-mute); }
+  .layer p { margin: 0 0 10px; font-size: .88rem; }
+  .nodes { display: flex; gap: 8px; flex-wrap: wrap; }
+  .node {
+    font-family: var(--mono); font-size: .78rem; color: var(--text);
+    background: var(--bg-card-2); border: 1px solid var(--line);
+    padding: 6px 11px; border-radius: 8px; cursor: default; transition: .15s;
+  }
+  .node:hover { border-color: var(--accent-2); color: #fff; }
+  .node small { color: var(--text-mute); display: block; font-size: .68rem; font-family: var(--sans); margin-top: 1px; }
+
+  /* ---------- Process walkthrough ---------- */
+  .proc-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 26px; }
+  @media (max-width: 700px){ .proc-tabs { grid-template-columns: 1fr; } }
+  .proc-tab {
+    text-align: left; cursor: pointer; font-family: inherit;
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; transition: .18s; color: var(--text);
+  }
+  .proc-tab:hover { border-color: #3a4555; }
+  .proc-tab.active { border-color: var(--accent); background: linear-gradient(180deg, rgba(110,231,183,.08), var(--bg-card)); }
+  .proc-tab .pt-k { font-family: var(--mono); font-size: .74rem; color: var(--accent); }
+  .proc-tab h4 { margin: 4px 0 4px; font-size: 1rem; }
+  .proc-tab p { margin: 0; font-size: .82rem; color: var(--text-dim); }
+
+  .stage {
+    margin-top: 22px; background: var(--bg-soft);
+    border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+  }
+  .stage-head { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); flex-wrap: wrap; }
+  .stage-head .who { font-weight: 700; }
+  .stepdots { display: flex; gap: 6px; margin-left: auto; }
+  .stepdots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); transition: .2s; display:block; cursor:pointer; }
+  .stepdots i.on { background: var(--accent); transform: scale(1.2); }
+  .stepdots i.done { background: var(--accent-2); }
+
+  .stage-body { display: grid; grid-template-columns: 1.1fr .9fr; gap: 0; min-height: 230px; }
+  @media (max-width: 760px){ .stage-body { grid-template-columns: 1fr; } }
+  .stage-text { padding: 22px; }
+  .stage-text .stno { font-family: var(--mono); color: var(--accent-2); font-size: .8rem; }
+  .stage-text h4 { margin: 6px 0 10px; font-size: 1.22rem; }
+  .stage-text p { margin: 0 0 12px; font-size: .95rem; }
+  .stage-text .files { display: flex; flex-direction: column; gap: 5px; }
+  .stage-text .files code { font-size: .76rem; align-self: flex-start; }
+  .stage-viz {
+    border-left: 1px solid var(--line-soft); padding: 22px;
+    background: #0b0f15; display: flex; align-items: center; justify-content: center;
+  }
+  @media (max-width: 760px){ .stage-viz { border-left: none; border-top: 1px solid var(--line-soft); } }
+  .viz-box {
+    font-family: var(--mono); font-size: .8rem; color: var(--accent);
+    background: #0c1f1a; border: 1px solid #1d3b32; border-radius: 10px;
+    padding: 14px 16px; width: 100%; text-align: center; position: relative;
+  }
+  .viz-box .vlabel { color: var(--text-mute); font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; display:block; margin-bottom: 6px; }
+  .viz-arrow { text-align: center; color: var(--accent-2); font-size: 1.3rem; margin: 6px 0; }
+  .stage-foot { display: flex; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--line-soft); }
+  .stage-foot button {
+    font-family: inherit; font-weight: 600; font-size: .88rem; cursor: pointer;
+    border-radius: 9px; padding: 9px 18px; border: 1px solid var(--line); transition: .15s;
+  }
+  .btn-prev { background: var(--bg-card); color: var(--text-dim); }
+  .btn-prev:hover:not(:disabled) { color: var(--text); }
+  .btn-next { background: var(--accent); color: #06231b; border-color: var(--accent); margin-left: auto; }
+  .btn-next:hover { filter: brightness(1.08); }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+
+  /* ---------- Fallback table ---------- */
+  table.fb { width: 100%; border-collapse: collapse; margin-top: 24px; font-size: .9rem; }
+  table.fb th, table.fb td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  table.fb th { color: var(--text-mute); font-weight: 600; font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; }
+  table.fb td:first-child { color: var(--accent-3); font-weight: 600; white-space: nowrap; }
+  table.fb tr:hover td { background: var(--bg-soft); }
+
+  /* ---------- Workflow / commands ---------- */
+  .cmd { background: #0b0f15; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; font-family: var(--mono); font-size: .83rem; color: var(--text-dim); overflow-x: auto; }
+  .cmd .c { color: var(--text-mute); }
+  .cmd .g { color: var(--accent); }
+  .cmd b { color: var(--text); font-weight: 400; }
+
+  /* ---------- Footer ---------- */
+  footer { padding: 46px 0 70px; border-top: 1px solid var(--line-soft); text-align: center; color: var(--text-mute); font-size: .86rem; }
+  footer .brand { justify-content: center; margin-bottom: 12px; }
+
+  .note { font-size: .82rem; color: var(--text-mute); margin-top: 10px; }
+  .kicker { color: var(--text-mute); font-size: .85rem; }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="top">
+  <div class="wrap">
+    <div class="brand"><span class="dot">P</span> Transcibio</div>
+    <div class="navlinks" id="navlinks">
+      <a href="#overview">Overview</a>
+      <a href="#stack">Stack</a>
+      <a href="#techniques">Techniques</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#processes">Processes</a>
+      <a href="#fallbacks">Fallbacks</a>
+      <a href="#workflow">Dev</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="badge"><span class="pulse"></span> 100% on-device · nothing leaves your machine</div>
+    <h1>Transcibio, explained</h1>
+    <p class="tag">A private, offline assistant that turns your audio into searchable transcripts, lets you chat over them, and talks back — all running locally on your own computer.</p>
+    <div class="hero-meta">
+      <span class="chip"><b>FastAPI</b> + SQLite backend</span>
+      <span class="chip"><b>React</b> + Vite frontend</span>
+      <span class="chip"><b>German-first</b> UI</span>
+      <span class="chip"><b>Hands-free</b> voice mode</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ OVERVIEW ============ -->
+<section id="overview">
+  <div class="wrap">
+    <div class="eyebrow">The big picture</div>
+    <h2>What is Transcibio?</h2>
+    <p class="lead">Transcibio is an <strong>on-device assistant</strong> for meetings and notes. You give it audio; it transcribes who said what, lets you ask questions about the conversation, proposes follow-up actions (like drafting an email), and can hold a hands-free spoken conversation with you. The defining rule: <strong>every step happens locally</strong> — speech recognition, the language model, and the voice all run on your machine. No cloud, no accounts, no data leaving the device.</p>
+
+    <div class="grid g4">
+      <div class="card">
+        <span class="ico">🎙️</span>
+        <h4>Transcribe</h4>
+        <p>Audio → text with speaker labels ("who said what") and word-level timing.</p>
+      </div>
+      <div class="card">
+        <span class="ico">💬</span>
+        <h4>Chat over it</h4>
+        <p>Ask questions; answers are grounded in the transcript with clickable citations.</p>
+      </div>
+      <div class="card">
+        <span class="ico">⚡</span>
+        <h4>Propose actions</h4>
+        <p>The assistant can suggest structured follow-ups — email drafts, task lists, exports.</p>
+      </div>
+      <div class="card">
+        <span class="ico">🗣️</span>
+        <h4>Talk hands-free</h4>
+        <p>Speak naturally; it listens, thinks, and answers out loud — and you can interrupt it.</p>
+      </div>
+    </div>
+
+    <h3>Why "local-only" matters</h3>
+    <p>Meetings contain sensitive things — names, decisions, salaries, health, strategy. Most transcription tools ship that audio to a server. Transcibio is built so it physically <em>cannot</em> leak: the AI models live in files on your disk, and the backend talks to them over <code>localhost</code>. That privacy guarantee is the product. Every architectural choice below exists to keep it true while still feeling fast and modern.</p>
+  </div>
+</section>
+
+<!-- ============ STACK ============ -->
+<section id="stack">
+  <div class="wrap">
+    <div class="eyebrow">Tooling</div>
+    <h2>The tech stack at a glance</h2>
+    <p class="lead">Two hand-written halves (a Python backend and a React frontend) wired to a set of <strong>optional</strong> AI engines. "Optional" is key — if an engine isn't installed, the feature degrades gracefully instead of crashing.</p>
+
+    <div class="grid g2">
+      <div class="card">
+        <span class="pill be">Backend</span>
+        <h4 style="margin-top:10px">FastAPI + SQLite · Python 3.10</h4>
+        <p>A web server (<code>FastAPI</code>) that exposes a REST + WebSocket API, plus a single embedded <code>SQLite</code> database file for all data. A background worker thread runs slow jobs (like transcription) off the request path.</p>
+      </div>
+      <div class="card">
+        <span class="pill fe">Frontend</span>
+        <h4 style="margin-top:10px">React 18 + Vite + TypeScript</h4>
+        <p>A single-page app built with <code>Vite</code>, styled with <code>Tailwind</code> and accessible <code>Radix UI</code> primitives. Talks to the backend over REST, Server-Sent Events, and a WebSocket for streaming voice.</p>
+      </div>
+    </div>
+
+    <h3>The optional AI engines</h3>
+    <div class="grid g3">
+      <div class="card"><span class="pill opt">STT</span><h4 style="margin-top:8px">faster-whisper</h4><p>Speech → text. Runs locally on CPU or GPU.</p></div>
+      <div class="card"><span class="pill opt">Diarization</span><h4 style="margin-top:8px">pyannote.audio</h4><p>Figures out <em>who</em> is speaking and when.</p></div>
+      <div class="card"><span class="pill opt">LLM</span><h4 style="margin-top:8px">Ollama / LM Studio</h4><p>The "brain" for chat & correction. Reached over localhost.</p></div>
+      <div class="card"><span class="pill opt">TTS · DE</span><h4 style="margin-top:8px">Piper</h4><p>German text → speech, 22.05&nbsp;kHz, via a subprocess.</p></div>
+      <div class="card"><span class="pill opt">TTS · EN</span><h4 style="margin-top:8px">Kokoro</h4><p>English text → speech, 24&nbsp;kHz, in-process ONNX.</p></div>
+      <div class="card"><span class="pill opt">VAD</span><h4 style="margin-top:8px">Silero (in browser)</h4><p>Detects when you start & stop speaking, offline.</p></div>
+    </div>
+    <p class="note">All six are lazy-imported and faked in tests — so the project installs and runs even with none of them present.</p>
+  </div>
+</section>
+
+<!-- ============ TECHNIQUES ============ -->
+<section id="techniques">
+  <div class="wrap">
+    <div class="eyebrow">Concepts worth learning</div>
+    <h2>Key techniques used</h2>
+    <p class="lead">If you're new to systems like this, these are the ideas that make Transcibio tick. Click any one to expand.</p>
+
+    <div id="techlist"></div>
+  </div>
+</section>
+
+<!-- ============ ARCHITECTURE ============ -->
+<section id="architecture">
+  <div class="wrap">
+    <div class="eyebrow">How the pieces fit</div>
+    <h2>Architecture explorer</h2>
+    <p class="lead">Transcibio is layered. The frontend never talks to AI engines directly — it only talks to the backend, which orchestrates everything. Switch tabs to explore each layer.</p>
+
+    <div class="tabs" id="archtabs">
+      <button class="active" data-arch="be">🐍 Backend</button>
+      <button data-arch="fe">⚛️ Frontend</button>
+      <button data-arch="data">🗄️ Data &amp; Jobs</button>
+    </div>
+
+    <div class="tabpanel active" data-panel="be">
+      <div class="layer">
+        <h4>① Entry &amp; wiring <span class="lt">backend/app/main.py</span></h4>
+        <p><code>create_app()</code> builds the FastAPI app. On startup it creates one of each "singleton" and attaches them to <code>app.state</code> — so every request shares the same store, orchestrators, and background worker.</p>
+        <div class="nodes">
+          <span class="node">SQLiteStore<small>database</small></span>
+          <span class="node">TranscriptionOrchestrator<small>audio→text</small></span>
+          <span class="node">ChatOrchestrator<small>Q&amp;A</small></span>
+          <span class="node">ActionOrchestrator<small>proposals</small></span>
+          <span class="node">TtsOrchestrator<small>speech</small></span>
+          <span class="node">JobRuntime<small>worker</small></span>
+        </div>
+      </div>
+      <div class="layer">
+        <h4>② API routers <span class="lt">/api/v1/*</span></h4>
+        <p>Each feature gets its own router. <code>deps.py</code> hands the right singleton to each route via FastAPI's dependency injection.</p>
+        <div class="nodes">
+          <span class="node">health</span><span class="node">sessions</span><span class="node">transcripts</span>
+          <span class="node">chat</span><span class="node">voice_commands</span>
+          <span class="node">voice_turn<small>WebSocket</small></span>
+          <span class="node">actions</span><span class="node">jobs</span><span class="node">settings</span><span class="node">tts</span><span class="node">events<small>SSE</small></span>
+        </div>
+      </div>
+      <div class="layer">
+        <h4>③ Services / orchestrators <span class="lt">backend/app/services/*</span></h4>
+        <p>The real work. Each orchestrator composes smaller providers behind a <code>typing.Protocol</code> interface, so any provider can be swapped for a fake or a fallback.</p>
+        <div class="nodes">
+          <span class="node">stt<small>faster-whisper</small></span>
+          <span class="node">diarization<small>pyannote + Safe wrapper</small></span>
+          <span class="node">transcript_assembly</span>
+          <span class="node">retrieval<small>find relevant bits</small></span>
+          <span class="node">local_llm<small>Ollama / LM Studio</small></span>
+          <span class="node">tts_streaming<small>Piper / Kokoro</small></span>
+          <span class="node">text_chunking<small>SentenceChunker</small></span>
+          <span class="node">actions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabpanel" data-panel="fe">
+      <div class="layer">
+        <h4>① Shell &amp; layout <span class="lt">main.tsx → App → AppShell</span></h4>
+        <p>Providers (theme, tooltips, toasts) wrap an <code>AppShell</code> that lays out a <strong>Sidebar</strong> (sessions) next to the main <strong>ChatView</strong>.</p>
+        <div class="nodes"><span class="node">Sidebar<small>session list</small></span><span class="node">ChatView<small>main orchestrator</small></span><span class="node">Dialogs<small>settings, rename…</small></span></div>
+      </div>
+      <div class="layer">
+        <h4>② Components <span class="lt">src/components/*</span></h4>
+        <p>The chat surface and its parts. <code>VoiceModeBar</code> shows the hands-free state ("Zuhören…", "Erkenne Sprache…", "Spricht…").</p>
+        <div class="nodes">
+          <span class="node">ChatThread</span><span class="node">MessageBubble<small>markdown + citations</small></span>
+          <span class="node">CitationList</span><span class="node">ActionCard</span>
+          <span class="node">VoiceModeBar</span><span class="node">Composer<small>input + mic</small></span>
+        </div>
+      </div>
+      <div class="layer">
+        <h4>③ Hooks &amp; audio <span class="lt">src/hooks/* · src/audio/*</span></h4>
+        <p>State logic lives in hooks. The voice loop is built from three pieces working together.</p>
+        <div class="nodes">
+          <span class="node">useVadConversation<small>the hands-free loop</small></span>
+          <span class="node">useVoiceTurn<small>WebSocket client</small></span>
+          <span class="node">PcmStreamPlayer<small>gapless playback</small></span>
+          <span class="node">useChat</span><span class="node">useTranscript</span><span class="node">useJobEvents<small>SSE</small></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabpanel" data-panel="data">
+      <div class="layer">
+        <h4>SQLiteStore <span class="lt">backend/app/store.py</span></h4>
+        <p>One SQLite file (WAL mode, foreign keys on) holds everything as <strong>frozen dataclass</strong> records. Transcript edits never overwrite — they create a <strong>new revision</strong> linked to its parent, giving you a full undo/audit chain.</p>
+        <div class="nodes">
+          <span class="node">sessions</span><span class="node">audio_assets</span>
+          <span class="node">transcript_revisions<small>immutable</small></span>
+          <span class="node">transcript_segments</span><span class="node">transcript_words</span><span class="node">speakers</span>
+          <span class="node">chat_threads</span><span class="node">chat_messages</span><span class="node">message_citations</span>
+          <span class="node">action_proposals</span><span class="node">jobs</span>
+        </div>
+      </div>
+      <div class="layer">
+        <h4>JobRuntime <span class="lt">backend/app/services/job_runtime.py</span></h4>
+        <p>A background thread that runs slow work (transcription, typed chat) <em>off</em> the HTTP request, then streams progress to the browser via Server-Sent Events on <code>/events/subscribe/{job_id}</code>. Job states: <code>queued → running → succeeded / failed</code>.</p>
+        <div class="nodes"><span class="node">enqueue_transcription_job</span><span class="node">enqueue_chat_reply_job</span><span class="node">subscribe(job_id)<small>SSE pub/sub</small></span></div>
+      </div>
+      <div class="layer">
+        <h4>Configuration <span class="lt">backend/app/config.py</span></h4>
+        <p><code>AppSettings</code> is a frozen dataclass built from <code>TRANSCIBIO_*</code> environment variables (loaded from <code>.env</code>, with existing process env winning). It picks which providers and model paths to use.</p>
+        <div class="nodes"><span class="node">TRANSCIBIO_LLM_PROVIDER</span><span class="node">TRANSCIBIO_TTS_PROVIDER</span><span class="node">TRANSCIBIO_PROFILE<small>fast/balanced/quality</small></span><span class="node">HF_TOKEN</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESSES ============ -->
+<section id="processes">
+  <div class="wrap">
+    <div class="eyebrow">Watch it work, step by step</div>
+    <h2>The three core processes</h2>
+    <p class="lead">These are the journeys that matter. Pick one, then step through it — each step names the real files involved and shows how the data transforms.</p>
+
+    <div class="proc-tabs" id="proctabs">
+      <button class="proc-tab active" data-proc="0">
+        <span class="pt-k">PROCESS A</span>
+        <h4>🎧 Audio → Transcript</h4>
+        <p>How a recording becomes a corrected, speaker-labelled transcript.</p>
+      </button>
+      <button class="proc-tab" data-proc="1">
+        <span class="pt-k">PROCESS B</span>
+        <h4>💬 Grounded Chat</h4>
+        <p>How a question gets an answer backed by transcript citations.</p>
+      </button>
+      <button class="proc-tab" data-proc="2">
+        <span class="pt-k">PROCESS C</span>
+        <h4>🗣️ Streaming Voice</h4>
+        <p>The full hands-free loop: listen → think → speak, with barge-in.</p>
+      </button>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head">
+        <span class="who" id="stageWho"></span>
+        <span class="kicker" id="stageCount"></span>
+        <div class="stepdots" id="stepdots"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-text">
+          <span class="stno" id="stno"></span>
+          <h4 id="stTitle"></h4>
+          <p id="stDesc"></p>
+          <div class="files" id="stFiles"></div>
+        </div>
+        <div class="stage-viz" id="stViz"></div>
+      </div>
+      <div class="stage-foot">
+        <button class="btn-prev" id="btnPrev">← Previous</button>
+        <button class="btn-next" id="btnNext">Next →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FALLBACKS ============ -->
+<section id="fallbacks">
+  <div class="wrap">
+    <div class="eyebrow">The design philosophy</div>
+    <h2>Graceful fallbacks everywhere</h2>
+    <p class="lead">Transcibio's golden rule: <strong>a missing engine should degrade a feature, never break the app</strong>. Non-fatal failures are collected as <em>warnings</em> in result objects instead of raised as exceptions. Here's what happens when each optional piece is absent.</p>
+
+    <table class="fb">
+      <thead><tr><th>When this is missing…</th><th>What happens instead</th></tr></thead>
+      <tbody>
+        <tr><td>pyannote / HF_TOKEN</td><td><code>SafeDiarizationRunner</code> swallows the failure; the transcript uses "UNKNOWN_SPEAKER" labels and keeps going.</td></tr>
+        <tr><td>Ollama / LM Studio (the LLM)</td><td>Chat &amp; correction fall back to <code>RuleBasedChatModelClient</code> — deterministic answers built from the top transcript snippets. Voice mode speaks one rule-based sentence.</td></tr>
+        <tr><td>A transcript at all</td><td>Chat simply answers as a general assistant — no longer an error.</td></tr>
+        <tr><td>Piper / Kokoro (TTS)</td><td>The voice-turn WebSocket returns an <code>error</code> frame; typed text chat is unaffected.</td></tr>
+        <tr><td>faster-whisper (STT)</td><td>The voice-command API returns editable fallback text so you can type instead.</td></tr>
+        <tr><td>FFmpeg</td><td>Native audio still works; only non-native formats (e.g. MP3) need it. Can be made mandatory via <code>TRANSCIBIO_REQUIRE_FFMPEG</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ WORKFLOW ============ -->
+<section id="workflow">
+  <div class="wrap">
+    <div class="eyebrow">For contributors</div>
+    <h2>Running &amp; testing it</h2>
+    <p class="lead">The backend uses <code>uv</code> with a local virtual environment; the frontend uses plain <code>npm</code>. Tests and lint run on every push via GitHub Actions.</p>
+
+    <div class="grid g2">
+      <div>
+        <h3>Backend</h3>
+        <div class="cmd">
+<span class="c"># install (CPU) into the venv</span><br>
+uv pip install --python <b>.venv\Scripts\python.exe</b> <span class="g">".[dev]"</span><br><br>
+<span class="c"># run the API server</span><br>
+.venv\Scripts\python.exe -m uvicorn <b>backend.app.main:app</b> --reload<br><br>
+<span class="c"># tests &amp; lint</span><br>
+.venv\Scripts\python.exe -m <span class="g">pytest</span><br>
+.venv\Scripts\python.exe -m <span class="g">ruff</span> check
+        </div>
+      </div>
+      <div>
+        <h3>Frontend</h3>
+        <div class="cmd">
+<span class="c"># install (postinstall copies offline VAD assets)</span><br>
+npm install<br><br>
+<span class="c"># dev server / production build</span><br>
+npm run <span class="g">dev</span><br>
+npm run <span class="g">build</span>   <span class="c"># tsc -b &amp;&amp; vite build</span><br><br>
+<span class="c"># tests</span><br>
+npm run <span class="g">test</span>      <span class="c"># Vitest</span><br>
+npm run <span class="g">test:e2e</span>  <span class="c"># Playwright</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Continuous Integration <span class="kicker">— .github/workflows/ci.yml</span></h3>
+    <p>Two jobs run on every push to <code>main</code> and every PR. CI installs only the <strong>light</strong> dependencies — the multi-GB ML stack is lazy-imported and faked in tests, so the heavy CUDA wheels never download and runs finish in seconds.</p>
+    <div class="grid g2">
+      <div class="card"><span class="pill be">Backend job</span><p style="margin-top:10px"><code>ruff check</code> → <code>ruff format --check</code> → <code>pytest -q</code></p></div>
+      <div class="card"><span class="pill fe">Frontend job</span><p style="margin-top:10px"><code>npm ci</code> → <code>tsc -b</code> (typecheck) → <code>vitest run</code></p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><span class="dot">P</span> Transcibio</div>
+    <p>An interactive walkthrough of a privacy-first, on-device assistant.<br>Built from the project's own source — backend, frontend, and the streaming-voice flow.</p>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   Data
+   ============================================================ */
+const TECHNIQUES = [
+  { t: "On-device, privacy-first inference",
+    why: "Why it's here",
+    d: "Every AI model — speech-to-text, the LLM, the voice — runs on your own machine and is reached over localhost. Sensitive audio never travels to a server, which is the whole point of the product." },
+  { t: "Streaming everything",
+    why: "The trick to feeling fast",
+    d: "Instead of waiting for a full answer, Transcibio streams LLM tokens → groups them into sentences (SentenceChunker) → synthesizes each sentence to audio → plays it gaplessly. You hear the first words while the rest is still being generated." },
+  { t: "Graceful degradation / fallbacks",
+    why: "Robustness by design",
+    d: "Every external dependency is optional. Missing engines emit warnings collected in result objects instead of raising exceptions, so a feature downgrades (e.g. unknown speakers, rule-based replies) rather than the app crashing." },
+  { t: "Protocol-based service boundaries",
+    why: "Clean, testable seams",
+    d: "Services are defined as typing.Protocol interfaces (SpeechToTextClient, StreamingTtsEngine, ChatModelClient…). Real providers, fakes for tests, and fallbacks all satisfy the same shape — classic dependency inversion." },
+  { t: "Browser-side Voice Activity Detection",
+    why: "Hands-free, offline",
+    d: "Silero VAD runs in the browser to detect when you start and stop talking. Its model + ONNX runtime are copied into the app at install time, so the hands-free loop works with no network." },
+  { t: "Retrieval-grounded chat with citations",
+    why: "Answers you can trust",
+    d: "Before answering, the backend retrieves the most relevant transcript segments (sparse lexical scoring + cosine similarity) and feeds them to the LLM, which cites them as [SEG:…] markers — rendered as clickable quotes." },
+  { t: "Immutable transcript revisions",
+    why: "Free undo & audit trail",
+    d: "Editing a segment or renaming a speaker creates a brand-new revision pointing back to its parent, instead of mutating in place. The chain is a built-in history of every change." },
+  { t: "Language locking for TTS correctness",
+    why: "Stops the robot speaking gibberish",
+    d: "In voice mode the reply language is hard-locked to the engine's language (Piper = German, Kokoro = English) and the language hint to STT is pinned too — so the model can't drift into a language the voice can't pronounce." },
+];
+
+const PROCESSES = [
+  {
+    who: "Process A · Audio → Corrected Transcript",
+    entry: "TranscriptionOrchestrator.transcribe_audio_asset()",
+    steps: [
+      { title: "Upload & validate", desc: "Audio is stored under the session and validated (MIME type, duration). The orchestrator confirms the session and audio asset exist before starting.",
+        files: ["audio_storage.py", "transcription_orchestrator.py"],
+        from: "🎵 recording.wav", to: "stored audio asset" },
+      { title: "Speech-to-Text", desc: "faster-whisper transcribes the audio into time-stamped segments with word-level timing. Model size depends on the profile (fast=small, balanced=medium, quality=large-v3).",
+        files: ["services/stt.py → FasterWhisperSttClient"],
+        from: "audio waveform", to: "SttResult\n(segments + words + timing)" },
+      { title: "Diarization (who spoke)", desc: "pyannote.audio labels speaker turns. Wrapped by SafeDiarizationRunner, so if it fails or there's no HF_TOKEN, it falls back to unknown speakers instead of erroring.",
+        files: ["services/diarization.py", "diarization_pyannote.py"],
+        from: "audio + segments", to: "speaker segments\n(Speaker A, B…)" },
+      { title: "Assembly", desc: "STT segments and speaker labels are merged: each segment is matched to a speaker, words are attached, and the full text is built — then persisted as a new transcript revision.",
+        files: ["transcript_assembly.py", "store.py → create_transcript_revision()"],
+        from: "text + speakers", to: "TranscriptRevision\n(in SQLite)" },
+      { title: "Optional LLM correction", desc: "On demand, the transcript can be cleaned up: the LLM fixes punctuation/wording (or deterministic rules do, if no LLM). Applying it creates yet another revision.",
+        files: ["transcript_correction.py"],
+        from: "raw transcript", to: "polished revision\n+ retrieval re-index" },
+    ],
+  },
+  {
+    who: "Process B · Grounded Chat over the Transcript",
+    entry: "ChatOrchestrator.run_chat_reply_job()",
+    steps: [
+      { title: "Question arrives", desc: "A user message is saved and an empty assistant message is created with status 'running'. The relevant transcript revision is resolved (chosen, latest, or none).",
+        files: ["chat_orchestrator.py", "store.py"],
+        from: "🧑 'What did we decide?'", to: "user + pending\nassistant message" },
+      { title: "Retrieval", desc: "The transcript is embedded into sparse lexical vectors (built once, cached as JSON). The question is scored against every segment with cosine similarity; the top hits + their neighbours are kept.",
+        files: ["services/retrieval.py → TranscriptRetriever"],
+        from: "question", to: "top-k segments\n(+ neighbours)" },
+      { title: "Build the prompt", desc: "Relevant segments are formatted as a bulleted context with [SEG:id] tags, the reply language is detected (DE/EN), and a system prompt tells the model to cite its sources.",
+        files: ["chat_orchestrator.py → ChatModelRequest"],
+        from: "context + question", to: "ChatModelRequest" },
+      { title: "Ask the LLM", desc: "Sent to Ollama (NDJSON) or LM Studio (SSE) over localhost via plain urllib. If neither is up, RuleBasedChatModelClient returns a deterministic answer from the snippets.",
+        files: ["services/local_llm.py"],
+        from: "ChatModelRequest", to: "answer markdown\nwith [SEG:…]" },
+      { title: "Cite & persist", desc: "The [SEG:…] markers are validated against real segments and turned into citation records. The finished answer (markdown + plain text) and citations are saved; action proposals may be extracted.",
+        files: ["chat_orchestrator.py", "store.py → create_message_citations()"],
+        from: "answer + markers", to: "ChatMessage\n+ clickable citations" },
+    ],
+  },
+  {
+    who: "Process C · Streaming Voice Mode (hands-free loop)",
+    entry: "WebSocket /api/v1/voice-turn",
+    steps: [
+      { title: "Listen (browser VAD)", desc: "Silero VAD runs in the browser, continuously watching the mic. When it detects you've finished speaking, it captures the clip. If you talk while the assistant speaks, playback is cut instantly — barge-in.",
+        files: ["hooks/useVadConversation.ts"],
+        from: "🎙️ your voice", to: "speech clip (WAV)" },
+      { title: "Transcribe the clip", desc: "The clip is sent to the voice-commands endpoint with the language hint pinned to the engine (Piper→de, Kokoro→en) to stop mis-detection. Silence/noise just loops back to listening.",
+        files: ["api/routers/voice_commands.py", "useVadConversation.ts"],
+        from: "speech clip", to: "your text" },
+      { title: "Open the WebSocket", desc: "useVoiceTurn opens /api/v1/voice-turn and sends {session_id, text, engine}. The server creates the chat messages and sends a 'start' frame (sample_rate, voice, message id).",
+        files: ["hooks/useVoiceTurn.ts", "routers/voice_turn.py"],
+        from: "{text, engine}", to: "'start' frame\n(22050 or 24000 Hz)" },
+      { title: "Stream → chunk → speak", desc: "stream_voice_turn pipes LLM tokens through SentenceChunker (German-aware, early first-clause flush for low latency). Each finished sentence is synthesized to raw int16 PCM by Piper or Kokoro.",
+        files: ["chat_orchestrator.py → stream_voice_turn()", "text_chunking.py", "tts_streaming.py"],
+        from: "LLM tokens", to: "sentence + PCM\nframes (8192 B)" },
+      { title: "Gapless playback", desc: "The browser plays each PCM frame with sample-accurate scheduling so audio is seamless. Sentences pipeline: you hear sentence 1 while sentence 2 is still being generated.",
+        files: ["audio/PcmStreamPlayer.ts"],
+        from: "PCM frames", to: "🔊 continuous speech" },
+      { title: "Done → loop", desc: "A 'done' frame closes the turn; the answer is saved (with citations) just like typed chat. The loop returns to listening for your next utterance — fully hands-free.",
+        files: ["routers/voice_turn.py", "useVadConversation.ts"],
+        from: "'done' frame", to: "↺ back to listening" },
+    ],
+  },
+];
+
+/* ============================================================
+   Techniques accordion
+   ============================================================ */
+const techlist = document.getElementById('techlist');
+TECHNIQUES.forEach((tech, i) => {
+  const el = document.createElement('div');
+  el.className = 'tech';
+  el.innerHTML = `
+    <button aria-expanded="false">
+      <span class="tnum">${String(i+1).padStart(2,'0')}</span>
+      <span>${tech.t}</span>
+      <span class="caret">▶</span>
+    </button>
+    <div class="body"><div class="body-in">
+      <span class="why">${tech.why}</span>${tech.d}
+    </div></div>`;
+  const btn = el.querySelector('button');
+  btn.addEventListener('click', () => {
+    const open = el.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open);
+  });
+  techlist.appendChild(el);
+});
+
+/* ============================================================
+   Architecture tabs
+   ============================================================ */
+const archtabs = document.getElementById('archtabs');
+archtabs.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  archtabs.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.querySelectorAll('[data-panel]').forEach(p =>
+    p.classList.toggle('active', p.dataset.panel === b.dataset.arch));
+});
+
+/* ============================================================
+   Process walkthrough state machine
+   ============================================================ */
+let curProc = 0, curStep = 0;
+const proctabs = document.getElementById('proctabs');
+const stepdots = document.getElementById('stepdots');
+const stno = document.getElementById('stno');
+const stTitle = document.getElementById('stTitle');
+const stDesc = document.getElementById('stDesc');
+const stFiles = document.getElementById('stFiles');
+const stViz = document.getElementById('stViz');
+const stageWho = document.getElementById('stageWho');
+const stageCount = document.getElementById('stageCount');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+
+function renderStep() {
+  const proc = PROCESSES[curProc];
+  const step = proc.steps[curStep];
+  stageWho.textContent = proc.who;
+  stageCount.textContent = `${curStep+1} / ${proc.steps.length}`;
+  stno.textContent = `STEP ${curStep+1} · entry: ${proc.entry}`;
+  stTitle.textContent = step.title;
+  stDesc.textContent = step.desc;
+
+  stFiles.innerHTML = step.files.map(f => `<code>${f}</code>`).join('');
+
+  stViz.innerHTML = `
+    <div style="width:100%">
+      <div class="viz-box"><span class="vlabel">in</span>${step.from.replace(/\n/g,'<br>')}</div>
+      <div class="viz-arrow">↓</div>
+      <div class="viz-box" style="color:var(--accent-3);background:#241c0e;border-color:#473714"><span class="vlabel">out</span>${step.to.replace(/\n/g,'<br>')}</div>
+    </div>`;
+
+  // dots
+  stepdots.innerHTML = '';
+  proc.steps.forEach((_, i) => {
+    const d = document.createElement('i');
+    if (i === curStep) d.className = 'on';
+    else if (i < curStep) d.className = 'done';
+    d.addEventListener('click', () => { curStep = i; renderStep(); });
+    stepdots.appendChild(d);
+  });
+
+  btnPrev.disabled = curStep === 0;
+  btnNext.textContent = curStep === proc.steps.length - 1 ? 'Restart ↺' : 'Next →';
+}
+
+proctabs.addEventListener('click', e => {
+  const b = e.target.closest('.proc-tab'); if (!b) return;
+  proctabs.querySelectorAll('.proc-tab').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  curProc = +b.dataset.proc; curStep = 0; renderStep();
+});
+btnPrev.addEventListener('click', () => { if (curStep > 0) { curStep--; renderStep(); } });
+btnNext.addEventListener('click', () => {
+  const len = PROCESSES[curProc].steps.length;
+  curStep = (curStep + 1) % len;
+  renderStep();
+});
+renderStep();
+
+/* ============================================================
+   Scroll-spy nav highlighting
+   ============================================================ */
+const sections = [...document.querySelectorAll('section[id]')];
+const navmap = {};
+document.querySelectorAll('#navlinks a').forEach(a => navmap[a.getAttribute('href').slice(1)] = a);
+const spy = new IntersectionObserver((entries) => {
+  entries.forEach(en => {
+    if (en.isIntersecting) {
+      Object.values(navmap).forEach(a => a.classList.remove('active'));
+      const link = navmap[en.target.id];
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-45% 0px -50% 0px' });
+sections.forEach(s => spy.observe(s));
+</script>
+</body>
+</html>
