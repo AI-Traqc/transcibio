@@ -1,171 +1,171 @@
-# Transcibio — Local-first audio transcription & assistant
+# Transcibio — Lokale Audio-Transkription & Assistent
 
-**Transcibio** is an on-device assistant that transcribes audio, identifies who said what, and drives chat / voice-command workflows against a local LLM. It also offers a hands-free **voice mode** — ask a question out loud and hear the answer spoken back. Everything runs locally; no data leaves the machine. The UI is German-first.
+**Transcibio** ist ein Assistent, der vollständig auf deinem Gerät läuft. Er transkribiert Audio, erkennt, wer was gesagt hat, und ermöglicht Chat- und Sprachbefehl-Abläufe mit einem lokalen LLM. Zusätzlich gibt es einen freihändigen **Sprachmodus** — du stellst eine Frage laut und hörst die Antwort gesprochen zurück. Alles läuft lokal; keine Daten verlassen den Rechner. Die Oberfläche ist auf Deutsch ausgelegt.
 
-- **Backend**: FastAPI (`backend/app/main.py`) with a background job runtime, SQLite persistence, and orchestrators for transcription, **diarization** (labelling each segment by speaker), chat, actions, and **TTS** (text-to-speech, including streaming TTS for voice mode).
-- **Frontend**: React + Vite + TypeScript (`frontend/`). Browser-side voice-activity detection (VAD, via Silero) drives turn-taking in voice mode; the VAD model + ONNX Runtime assets are bundled locally so it works offline.
-- **Providers** (all optional, with graceful fallbacks): `faster-whisper` (STT, speech-to-text), `pyannote.audio` (diarization), Ollama / LM Studio (LLM), Piper (German TTS), Kokoro (English TTS).
+- **Backend**: FastAPI (`backend/app/main.py`) mit einer Hintergrund-Job-Laufzeit, SQLite-Speicherung und Orchestratoren für Transkription, **Diarisierung** (Zuordnung jedes Abschnitts zu einem Sprecher), Chat, Aktionen und **TTS** (Text-zu-Sprache, inklusive Streaming-TTS für den Sprachmodus).
+- **Frontend**: React + Vite + TypeScript (`frontend/`). Die Sprachaktivitätserkennung im Browser (VAD, über Silero) steuert den Sprecherwechsel im Sprachmodus; das VAD-Modell und die ONNX-Runtime-Dateien sind lokal eingebunden, damit alles offline funktioniert.
+- **Provider** (alle optional, mit sanften Fallbacks): `faster-whisper` (STT, Sprache-zu-Text), `pyannote.audio` (Diarisierung), Ollama / LM Studio (LLM), Piper (deutsches TTS), Kokoro (englisches TTS).
 
-**Chat works with or without a transcript.** With no transcript it's a general assistant; with a transcript it grounds answers in the transcript (with citations) when relevant and falls back to general knowledge otherwise. The assistant replies in the language you speak or type.
+**Der Chat funktioniert mit oder ohne Transkript.** Ohne Transkript ist er ein allgemeiner Assistent; mit Transkript stützt er seine Antworten auf das Transkript (mit Quellenangaben), wenn das passt, und greift sonst auf allgemeines Wissen zurück. Der Assistent antwortet in der Sprache, die du sprichst oder schreibst.
 
 ---
 
-## Quickstart (Windows)
+## Schnellstart (Windows)
 
-> **Platform:** Windows is the primary target — all commands below use Windows paths (`.venv\Scripts\python.exe`) and tools (`copy`, `winget`). On macOS/Linux, adapt the venv path to `.venv/bin/python`, use `cp` instead of `copy`, and install FFmpeg via your package manager.
+> **Plattform:** Windows ist die primäre Zielplattform — alle Befehle unten verwenden Windows-Pfade (`.venv\Scripts\python.exe`) und -Werkzeuge (`copy`, `winget`). Unter macOS/Linux passt du den venv-Pfad auf `.venv/bin/python` an, verwendest `cp` statt `copy` und installierst FFmpeg über deinen Paketmanager.
 
-### Prerequisites
+### Voraussetzungen
 
-**Required:**
+**Erforderlich:**
 
-- **Python 3.10** via [`uv`](https://docs.astral.sh/uv/getting-started/installation/)
+- **Python 3.10** über [`uv`](https://docs.astral.sh/uv/getting-started/installation/)
 - **Node.js 18+** / `npm`
-- **FFmpeg** in `PATH` (for audio ingest):
+- **FFmpeg** im `PATH` (für die Audio-Verarbeitung):
   ```bash
   winget install -e --id Gyan.FFmpeg
   ffmpeg -version
   ```
-- **Ollama** (or LM Studio) running locally for chat / transcript correction. Transcibio defaults to Ollama at `http://127.0.0.1:11434`. Install Ollama, then pull the default model:
+- **Ollama** (oder LM Studio), das lokal läuft, für Chat / Transkript-Korrektur. Transcibio nutzt standardmäßig Ollama unter `http://127.0.0.1:11434`. Installiere Ollama und lade dann das Standardmodell:
   ```bash
   ollama pull gpt-oss-20b
-  ollama serve            # if not already running as a service
+  ollama serve            # falls es nicht bereits als Dienst läuft
   ```
-  Use a different model by setting `TRANSCIBIO_OLLAMA_MODEL` in `.env`. Without a running LLM, chat still works but falls back to deterministic stub replies.
+  Ein anderes Modell wählst du, indem du `TRANSCIBIO_OLLAMA_MODEL` in `.env` setzt. Ohne ein laufendes LLM funktioniert der Chat weiterhin, greift aber auf einfache, fest vorgegebene Antworten zurück.
 
 **Optional:**
 
-- **Hugging Face token** (`HF_TOKEN`) — only needed if you enable pyannote diarization. Accept the model terms at <https://huggingface.co/pyannote/speaker-diarization-community-1>.
-- **NVIDIA GPU / CUDA** — speeds up transcription and diarization (see the CUDA install path below).
-- **Voice-mode TTS models** — see [Voice mode](#voice-mode-optional) below.
+- **Hugging-Face-Token** (`HF_TOKEN`) — nur nötig, wenn du die pyannote-Diarisierung aktivierst. Akzeptiere die Modellbedingungen unter <https://huggingface.co/pyannote/speaker-diarization-community-1>.
+- **NVIDIA-GPU / CUDA** — beschleunigt Transkription und Diarisierung (siehe den CUDA-Installationsweg unten).
+- **TTS-Modelle für den Sprachmodus** — siehe [Sprachmodus](#sprachmodus-optional) unten.
 
-### 1. Get the code
+### 1. Code holen
 
 ```bash
 git clone https://github.com/ai-traqc/transcibio.git
 cd transcibio
 ```
 
-Run every command below from this repository root (the folder containing `pyproject.toml`).
+Führe alle folgenden Befehle aus dem Wurzelverzeichnis des Repositories aus (dem Ordner, der `pyproject.toml` enthält).
 
-### 2. Install
+### 2. Installieren
 
 ```bash
-# Create the Python venv
+# Python-venv erstellen
 uv python install 3.10
 uv venv --python 3.10 .venv
 
-# Install backend deps (CPU)
+# Backend-Abhängigkeiten installieren (CPU)
 uv pip install --python .venv\Scripts\python.exe ".[dev]"
 
-# …or with NVIDIA GPU / CUDA wheels instead
+# …oder stattdessen mit NVIDIA-GPU / CUDA-Wheels
 uv pip install --python .venv\Scripts\python.exe --torch-backend cu128 --reinstall ".[dev]"
 
-# (CUDA only) verify the torch install is CUDA-enabled
+# (nur CUDA) prüfen, ob die torch-Installation CUDA unterstützt
 .venv\Scripts\python.exe -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.is_available())"
 
-# Install frontend deps
+# Frontend-Abhängigkeiten installieren
 cd frontend
 npm install
 cd ..
 
-# Configure environment
+# Umgebung konfigurieren
 copy .env.example .env
-# edit .env — at minimum set HF_TOKEN if you want diarization
+# .env bearbeiten — setze mindestens HF_TOKEN, falls du Diarisierung möchtest
 ```
 
-The frontend `npm install` automatically runs a `postinstall` step that copies the Silero VAD model + ONNX Runtime assets into `frontend/public/vad/` (re-run manually with `npm run setup:vad`). This keeps voice mode fully offline.
+Das `npm install` im Frontend führt automatisch einen `postinstall`-Schritt aus, der das Silero-VAD-Modell und die ONNX-Runtime-Dateien nach `frontend/public/vad/` kopiert (manuell erneut ausführbar mit `npm run setup:vad`). So bleibt der Sprachmodus vollständig offline.
 
-### 3. Configure environment (`.env`)
+### 3. Umgebung konfigurieren (`.env`)
 
-All settings are optional and have sensible defaults, so `.env` is only needed to override them. Copy the example file and edit as required:
+Alle Einstellungen sind optional und haben sinnvolle Standardwerte, daher brauchst du `.env` nur, um sie zu überschreiben. Kopiere die Beispieldatei und bearbeite sie nach Bedarf:
 
 ```bash
-copy .env.example .env      # Windows (use `cp .env.example .env` on macOS/Linux)
+copy .env.example .env      # Windows (unter macOS/Linux: `cp .env.example .env`)
 ```
 
-The most commonly set values:
+Die am häufigsten gesetzten Werte:
 
-- `HF_TOKEN` — your Hugging Face token, required only if you enable pyannote diarization.
-- `TRANSCIBIO_OLLAMA_MODEL` — the Ollama model used for chat (default `gpt-oss-20b`).
+- `HF_TOKEN` — dein Hugging-Face-Token, nur nötig, wenn du die pyannote-Diarisierung aktivierst.
+- `TRANSCIBIO_OLLAMA_MODEL` — das Ollama-Modell für den Chat (Standard `gpt-oss-20b`).
 
-See `.env.example` for the full, commented list of variables. `.env` is git-ignored, so your secrets are never committed.
+Die vollständige, kommentierte Liste der Variablen findest du in `.env.example`. `.env` wird von Git ignoriert, deine geheimen Werte landen also nie im Repository.
 
-### 4. Run
+### 4. Starten
 
 ```bash
-# Backend (auto-reload)
+# Backend (automatischer Neustart bei Änderungen)
 .venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload
 
-# Frontend (separate terminal, from frontend/)
+# Frontend (separates Terminal, aus frontend/)
 cd frontend
 npm run dev
 ```
 
-Then open the app:
+Dann die App öffnen:
 
-- **Frontend** — the Vite dev server prints a URL, usually <http://localhost:5173>. Open it in your browser; you should see the German-first Transcibio UI.
-- **Backend API** — <http://127.0.0.1:8000>, with interactive Swagger docs at <http://127.0.0.1:8000/docs>.
+- **Frontend** — der Vite-Dev-Server gibt eine URL aus, üblicherweise <http://localhost:5173>. Öffne sie im Browser; du solltest die deutschsprachige Transcibio-Oberfläche sehen.
+- **Backend-API** — <http://127.0.0.1:8000>, mit interaktiver Swagger-Dokumentation unter <http://127.0.0.1:8000/docs>.
 
-Helper scripts (PowerShell) automate the readiness check and starting both servers:
+Hilfsskripte (PowerShell) automatisieren die Bereitschaftsprüfung und das Starten beider Server:
 
 ```powershell
-# Readiness check (FFmpeg + local providers) — run this first if something doesn't work
+# Bereitschaftsprüfung (FFmpeg + lokale Provider) — führe dies zuerst aus, wenn etwas nicht klappt
 powershell -ExecutionPolicy Bypass -File scripts/check_vnext_env.ps1
-# Start both backend + frontend
+# Backend + Frontend gemeinsam starten
 powershell -ExecutionPolicy Bypass -File scripts/start_vnext.ps1
 ```
 
-### Health / provider readiness
+### Status / Provider-Bereitschaft
 
-`GET /api/v1/healthz` reports FFmpeg + provider availability (LM Studio, Ollama, Piper) using best-effort checks.
+`GET /api/v1/healthz` meldet die Verfügbarkeit von FFmpeg und der Provider (LM Studio, Ollama, Piper) über Best-Effort-Prüfungen.
 
-### Fallbacks when providers are offline
+### Fallbacks, wenn Provider offline sind
 
-- **No local LLM** (Ollama / LM Studio unavailable): chat and transcript correction fall back to deterministic behavior.
-- **No Piper / Kokoro** (binary or models missing): TTS and voice mode return a clear failure status; text chat still works.
-- **No `faster-whisper` runtime**: the voice command API returns editable fallback text instead of crashing.
+- **Kein lokales LLM** (Ollama / LM Studio nicht verfügbar): Chat und Transkript-Korrektur greifen auf festes, vorhersehbares Verhalten zurück.
+- **Kein Piper / Kokoro** (Binary oder Modelle fehlen): TTS und Sprachmodus geben einen klaren Fehlerstatus zurück; der Text-Chat funktioniert weiterhin.
+- **Keine `faster-whisper`-Laufzeit**: Die Sprachbefehl-API liefert bearbeitbaren Ersatztext, statt abzustürzen.
 
 ---
 
-## Voice mode (optional)
+## Sprachmodus (optional)
 
-Voice mode lets you hold a continuous, hands-free spoken conversation: you speak, it transcribes, the answer is streamed back as speech, then it listens again — no push-to-talk per turn, and you can interrupt the assistant by speaking (barge-in). Two TTS engines are selectable in **Settings → "Voice-mode engine"**: **Piper** (German, voice `de_DE-thorsten-high`) and **Kokoro** (English).
+Im Sprachmodus führst du ein durchgehendes, freihändiges Gespräch: Du sprichst, es wird transkribiert, die Antwort wird als Sprache zurückgestreamt, und dann hört das System wieder zu — kein Knopfdruck pro Wortbeitrag, und du kannst den Assistenten durch Sprechen unterbrechen (Barge-in). Zwei TTS-Engines lassen sich unter **Einstellungen → „Voice-mode engine"** wählen: **Piper** (Deutsch, Stimme `de_DE-thorsten-high`) und **Kokoro** (Englisch).
 
-> Headphones recommended — loudspeaker echo can self-trigger barge-in.
+> Kopfhörer empfohlen — Echo vom Lautsprecher kann das Barge-in fälschlich auslösen.
 
-**Python dependencies for Kokoro (English):**
+**Python-Abhängigkeiten für Kokoro (Englisch):**
 
 ```bash
 uv pip install --python .venv\Scripts\python.exe kokoro-onnx soundfile
 ```
 
-**Models / binaries** live under `data/` (gitignored) and are downloaded once:
+**Modelle / Binaries** liegen unter `data/` (von Git ignoriert) und werden einmalig heruntergeladen:
 
-| Engine | File(s) | Source |
+| Engine | Datei(en) | Quelle |
 | --- | --- | --- |
-| Piper binary | `data/bin/piper/piper.exe` | [rhasspy/piper releases](https://github.com/rhasspy/piper/releases) |
-| Piper voice (DE) | `data/models/tts/piper/de_DE-thorsten-high.onnx` (+ `.onnx.json`) | HF [`rhasspy/piper-voices`](https://huggingface.co/rhasspy/piper-voices) |
-| Kokoro (EN) | `data/models/tts/kokoro/kokoro-v1.0.onnx` and `voices-v1.0.bin` | [thewh1teagle/kokoro-onnx releases](https://github.com/thewh1teagle/kokoro-onnx/releases) |
+| Piper-Binary | `data/bin/piper/piper.exe` | [rhasspy/piper releases](https://github.com/rhasspy/piper/releases) |
+| Piper-Stimme (DE) | `data/models/tts/piper/de_DE-thorsten-high.onnx` (+ `.onnx.json`) | HF [`rhasspy/piper-voices`](https://huggingface.co/rhasspy/piper-voices) |
+| Kokoro (EN) | `data/models/tts/kokoro/kokoro-v1.0.onnx` und `voices-v1.0.bin` | [thewh1teagle/kokoro-onnx releases](https://github.com/thewh1teagle/kokoro-onnx/releases) |
 
-Optional env overrides (defaults shown above are derived from `TRANSCIBIO_DATA_ROOT`):
+Optionale Umgebungs-Überschreibungen (die oben gezeigten Standardwerte leiten sich von `TRANSCIBIO_DATA_ROOT` ab):
 
 - `TRANSCIBIO_PIPER_BIN`, `TRANSCIBIO_PIPER_MODEL`
-- `TRANSCIBIO_KOKORO_MODEL`, `TRANSCIBIO_KOKORO_VOICES`, `TRANSCIBIO_KOKORO_VOICE` (default `af_sarah`)
+- `TRANSCIBIO_KOKORO_MODEL`, `TRANSCIBIO_KOKORO_VOICES`, `TRANSCIBIO_KOKORO_VOICE` (Standard `af_sarah`)
 
-**Usage:** click **Sprachmodus** above the chat composer to start. Pick the engine in Settings to match your language.
+**Verwendung:** Klicke auf **Sprachmodus** über dem Chat-Eingabefeld, um zu starten. Wähle die Engine in den Einstellungen passend zu deiner Sprache.
 
-> Time-to-first-audio depends on the LLM: with the default `gpt-oss-20b` it's ~2.3s warm; a smaller model is faster.
+> Die Zeit bis zum ersten Ton hängt vom LLM ab: mit dem Standardmodell `gpt-oss-20b` liegt sie warm bei ca. 2,3 s; ein kleineres Modell ist schneller.
 
-## Supported audio formats
+## Unterstützte Audioformate
 
-Uploaded audio files must be `.mp3` or `.wav`. In-browser recordings (`.webm`, `.ogg`, `.m4a`, `.mp4`, `.wav`, `.mp3`) are accepted and normalized to WAV via FFmpeg on ingest.
+Hochgeladene Audiodateien müssen `.mp3` oder `.wav` sein. Aufnahmen direkt im Browser (`.webm`, `.ogg`, `.m4a`, `.mp4`, `.wav`, `.mp3`) werden akzeptiert und beim Einlesen per FFmpeg in WAV umgewandelt.
 
-**Sample files for testing:** the repo ships two example recordings in the project root you can upload to try transcription, diarization, and chat end-to-end:
+**Beispieldateien zum Testen:** Das Repository enthält im Projektstamm zwei Beispielaufnahmen, die du hochladen kannst, um Transkription, Diarisierung und Chat von Anfang bis Ende auszuprobieren:
 
-- `Test_Kunde_Handwerker.wav` — a German customer/craftsman conversation (multi-speaker, exercises diarization).
-- `transcibio.mp3` — a shorter MP3 sample.
+- `Test_Kunde_Handwerker.wav` — ein deutsches Kunden-/Handwerker-Gespräch (mehrere Sprecher, fordert die Diarisierung).
+- `transcibio.mp3` — ein kürzeres MP3-Beispiel.
 
-These are staged demo recordings included intentionally; all other local data lives under `data/` and is gitignored.
+Dies sind bewusst aufgenommene Demo-Aufnahmen; alle anderen lokalen Daten liegen unter `data/` und werden von Git ignoriert.
 
 ---
 
@@ -173,18 +173,18 @@ These are staged demo recordings included intentionally; all other local data li
 
 ```bash
 # Backend (Python)
-.venv\Scripts\python.exe -m pytest                          # everything
-.venv\Scripts\python.exe -m pytest tests/api                # API router tests
-.venv\Scripts\python.exe -m pytest tests/services           # service tests
+.venv\Scripts\python.exe -m pytest                          # alles
+.venv\Scripts\python.exe -m pytest tests/api                # API-Router-Tests
+.venv\Scripts\python.exe -m pytest tests/services           # Service-Tests
 .venv\Scripts\python.exe -m pytest tests/services/test_local_llm.py -v
 
 # Frontend
 cd frontend
-npm run test          # Vitest (unit / component)
+npm run test          # Vitest (Unit / Komponenten)
 npm run test:e2e      # Playwright
 ```
 
-## Lint / format
+## Lint / Formatierung
 
 ```bash
 .venv\Scripts\python.exe -m ruff check
@@ -192,65 +192,65 @@ npm run test:e2e      # Playwright
 .venv\Scripts\python.exe -m ruff format
 ```
 
-## Continuous integration
+## Continuous Integration
 
-Every push to `main` and every pull request runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
+Jeder Push auf `main` und jeder Pull Request führt [`.github/workflows/ci.yml`](.github/workflows/ci.yml) aus:
 
-- **Backend** — `ruff check`, `ruff format --check`, and `pytest` (dependencies installed with `uv pip install`).
-- **Frontend** — `tsc -b` (typecheck) and `vitest`.
+- **Backend** — `ruff check`, `ruff format --check` und `pytest` (Abhängigkeiten installiert mit `uv pip install`).
+- **Frontend** — `tsc -b` (Typprüfung) und `vitest`.
 
-The optional ML stack (`torch`, `pyannote.audio`, `faster-whisper`, Kokoro) is imported lazily and replaced by fakes in the tests, so CI installs only the light runtime + dev tools and skips the multi-GB CUDA wheels. The lint, format, and test commands above mirror exactly what CI enforces — run them before pushing.
+Der optionale ML-Stack (`torch`, `pyannote.audio`, `faster-whisper`, Kokoro) wird verzögert importiert und in den Tests durch Fakes ersetzt, sodass CI nur die schlanke Laufzeit + Dev-Werkzeuge installiert und die mehrere GB großen CUDA-Wheels überspringt. Die Befehle oben für Lint, Formatierung und Tests entsprechen exakt dem, was CI prüft — führe sie aus, bevor du pushst.
 
 ---
 
-## Run with Docker (easiest — no Python/Node setup)
+## Mit Docker ausführen (am einfachsten — kein Python-/Node-Setup)
 
-If you just want to **use** the app without installing Python, Node, or FFmpeg, Docker runs the whole thing — backend, frontend, and German voice — with one command. It works the same on Windows, macOS, and Linux.
+Wenn du die App nur **nutzen** möchtest, ohne Python, Node oder FFmpeg zu installieren, führt Docker das Ganze — Backend, Frontend und deutsche Sprache — mit einem Befehl aus. Es funktioniert unter Windows, macOS und Linux gleich.
 
-### What you need first
+### Was du zuerst brauchst
 
-1. **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** installed and running.
-   - *Windows + NVIDIA GPU:* use Docker Desktop's **WSL 2** backend and install the NVIDIA container toolkit so the GPU is visible inside containers. No GPU? Use the **CPU** command below instead — it just runs slower.
-2. **Ollama running on your computer** (for real AI chat answers). Docker does **not** start it for you:
+1. **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** installiert und laufend.
+   - *Windows + NVIDIA-GPU:* Nutze das **WSL 2**-Backend von Docker Desktop und installiere das NVIDIA-Container-Toolkit, damit die GPU in den Containern sichtbar ist. Keine GPU? Nutze stattdessen den **CPU**-Befehl unten — er läuft nur langsamer.
+2. **Ollama, das auf deinem Computer läuft** (für echte KI-Chat-Antworten). Docker startet es **nicht** für dich:
    ```bash
-   ollama serve            # start it (if not already running)
-   ollama pull gpt-oss-20b # the default model, one-time download
+   ollama serve            # starten (falls noch nicht aktiv)
+   ollama pull gpt-oss-20b # das Standardmodell, einmaliger Download
    ```
-   Without Ollama the app still opens and works, but chat gives simple canned replies instead of AI answers.
+   Ohne Ollama öffnet und funktioniert die App weiterhin, aber der Chat gibt einfache vorgefertigte Antworten statt KI-Antworten.
 
-### Start it
+### Starten
 
-From the project root (the folder with `docker-compose.yml`):
+Aus dem Projektstamm (dem Ordner mit `docker-compose.yml`):
 
 ```bash
-# With an NVIDIA GPU (faster transcription)
+# Mit einer NVIDIA-GPU (schnellere Transkription)
 docker compose up --build
 
-# Without a GPU (CPU only)
+# Ohne GPU (nur CPU)
 docker compose -f docker-compose.yml -f docker-compose.cpu.yml up --build
 ```
 
-The first run takes a while (it downloads ~13 GB of dependencies). When it's ready, open:
+Der erste Lauf dauert eine Weile (er lädt ca. 13 GB an Abhängigkeiten herunter). Sobald es bereit ist, öffne:
 
 👉 **http://localhost:8080**
 
-That's the full app. To stop it, press **Ctrl+C**, then optionally `docker compose down` to remove the containers.
+Das ist die vollständige App. Zum Stoppen drücke **Strg+C** und führe optional `docker compose down` aus, um die Container zu entfernen.
 
-### Good to know
+### Gut zu wissen
 
-- **Both voice engines work out of the box** — Piper (German) and Kokoro (English), with their models, are built into the image. Pick one in **Settings → "Voice-mode engine"**.
-- **Your data is saved** in the `data/` folder on your computer (database, recordings, downloaded models), so it survives restarts.
-- **Settings** like `HF_TOKEN` or a different `TRANSCIBIO_OLLAMA_MODEL` go in a `.env` file in the project root — it's picked up automatically.
+- **Beide Sprach-Engines funktionieren sofort** — Piper (Deutsch) und Kokoro (Englisch), mit ihren Modellen, sind im Image enthalten. Wähle eine unter **Einstellungen → „Voice-mode engine"**.
+- **Deine Daten werden gespeichert** im Ordner `data/` auf deinem Computer (Datenbank, Aufnahmen, heruntergeladene Modelle), sodass sie Neustarts überstehen.
+- **Einstellungen** wie `HF_TOKEN` oder ein anderes `TRANSCIBIO_OLLAMA_MODEL` kommen in eine `.env`-Datei im Projektstamm — sie wird automatisch eingelesen.
 
-More detail and troubleshooting: [`docs/docker.md`](docs/docker.md).
+Mehr Details und Fehlerbehebung: [`docs/docker.md`](docs/docker.md).
 
 ---
 
-## Documentation
+## Dokumentation
 
-- [`CLAUDE.md`](CLAUDE.md) — architecture, conventions, and a full command reference.
-- [`docs/project_overview.md`](docs/project_overview.md) — project overview.
-- [`docs/demo_checklist_v1.md`](docs/demo_checklist_v1.md) — demo walkthrough checklist.
+- [`CLAUDE.md`](CLAUDE.md) — Architektur, Konventionen und eine vollständige Befehlsreferenz.
+- [`docs/project_overview.md`](docs/project_overview.md) — Projektübersicht.
+- [`docs/demo_checklist_v1.md`](docs/demo_checklist_v1.md) — Checkliste für den Demo-Durchlauf.
 
 ## Lizenz
 
