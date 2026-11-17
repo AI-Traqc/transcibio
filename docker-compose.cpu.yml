@@ -1,0 +1,14 @@
+# CPU-only override for machines without an NVIDIA GPU / nvidia-container-toolkit.
+# Drops the GPU device reservation so the stack still boots (PyTorch's cu128
+# wheels run fine on CPU — just slower transcription/diarization).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.cpu.yml up --build
+
+services:
+  backend:
+    deploy:
+      resources:
+        reservations:
+          # `!reset` clears the GPU device list inherited from the base file
+          # (a plain `[]` is merged, not replaced).
+          devices: !reset []

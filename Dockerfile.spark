@@ -1,0 +1,123 @@
+# syntax=docker/dockerfile:1
+#
+# Backend image for the NVIDIA GB10 (DGX Spark / Lenovo ThinkStation PGX, aarch64).
+# Used by docker-compose.spark.yml. The generic Dockerfile stays on torch 2.8.0/cu128
+# for x86 and CI; see docs/spark.md.
+
+ARG CUDA_VERSION=13.0.3
+
+FROM ghcr.io/astral-sh/uv:0.13.8 AS uv
+
+# --- CTranslate2 with CUDA (GPU faster-whisper) ------------------------------------
+# PyPI's aarch64 CTranslate2 wheels are CPU-only. Follows the upstream "NVIDIA Jetson"
+# source build. Same Ubuntu 24.04 as the runtime stage (glibc). First build ~30+ min.
+FROM nvidia/cuda:${CUDA_VERSION}-cudnn-devel-ubuntu24.04 AS ct2-build
+ARG CT2_VERSION=v4.9.0
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential cmake git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+RUN git clone --branch ${CT2_VERSION} --depth 1 --recursive \
+        https://github.com/OpenNMT/CTranslate2.git /src
+WORKDIR /src
+# 121 = GB10 (sm_121). `native` can't work in `docker build` (no GPU at build time).
+# WITH_RUY keeps a CPU int8 backend as fallback; MKL doesn't exist on ARM.
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+        -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=OFF -DWITH_RUY=ON \
+        -DOPENMP_RUNTIME=COMP -DCMAKE_CUDA_ARCHITECTURES=121 -DBUILD_CLI=OFF \
+    && cmake --build build -j"$(nproc)" \
+    && cmake --install build
+# Python wheel, built with the same Python 3.10 (python-build-standalone) as the runtime.
+COPY --from=uv /uv /bin/uv
+ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python
+RUN uv venv /tmp/ct2-venv --python 3.10 \
+    && cd /src/python \
+    && VIRTUAL_ENV=/tmp/ct2-venv uv pip install -r install_requirements.txt \
+    && /tmp/ct2-venv/bin/python setup.py bdist_wheel -d /wheels
+
+# --- Runtime ------------------------------------------------------------------------
+# `base`, not `cudnn-runtime`: torch's cu130 wheels bring their own cuBLAS/cuDNN (pip
+# nvidia-* packages). A second, system copy made CTranslate2 load cuDNN 9.14 while torch
+# needs 9.19 -> "cuDNN version incompatibility" in pyannote, depending on load order.
+# With `base`, both use the single pip copy (see the ld.so.conf.d entry below).
+FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu24.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1
+
+# ffmpeg: audio ingest + torchcodec's FFmpeg libs. libsndfile: pyannote/kokoro.
+# libgomp1: OpenMP runtime of the self-built CTranslate2 (OPENMP_RUNTIME=COMP).
+# libnpp-13-0: torchcodec's cu130 build links NPP (libnppicc.so.13) even for CPU decoding;
+# the `base` image doesn't have it (torch doesn't ship it, so there's no second copy).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ffmpeg \
+        libsndfile1 \
+        libgomp1 \
+        libnpp-13-0 \
+        git \
+        curl \
+        ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- Piper German TTS (binary + Thorsten voice), outside the /app/data volume -----
+ARG PIPER_RELEASE=2023.11.14-2
+ARG PIPER_VOICE_BASE=https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/thorsten/high
+RUN set -eux; \
+    curl -fsSL "https://github.com/rhasspy/piper/releases/download/${PIPER_RELEASE}/piper_linux_aarch64.tar.gz" \
+      | tar -xz -C /opt; \
+    curl -fsSL "${PIPER_VOICE_BASE}/de_DE-thorsten-high.onnx"      -o /opt/piper/de_DE-thorsten-high.onnx; \
+    curl -fsSL "${PIPER_VOICE_BASE}/de_DE-thorsten-high.onnx.json" -o /opt/piper/de_DE-thorsten-high.onnx.json
+
+# --- Kokoro English TTS (model + voice vectors) ------------------------------------
+ARG KOKORO_RELEASE=model-files-v1.0
+ARG KOKORO_BASE=https://github.com/thewh1teagle/kokoro-onnx/releases/download
+RUN set -eux; \
+    mkdir -p /opt/kokoro; \
+    curl -fsSL "${KOKORO_BASE}/${KOKORO_RELEASE}/kokoro-v1.0.onnx" -o /opt/kokoro/kokoro-v1.0.onnx; \
+    curl -fsSL "${KOKORO_BASE}/${KOKORO_RELEASE}/voices-v1.0.bin"  -o /opt/kokoro/voices-v1.0.bin
+
+ENV TRANSCIBIO_PIPER_BIN=/opt/piper/piper \
+    TRANSCIBIO_PIPER_MODEL=/opt/piper/de_DE-thorsten-high.onnx \
+    TRANSCIBIO_KOKORO_MODEL=/opt/kokoro/kokoro-v1.0.onnx \
+    TRANSCIBIO_KOKORO_VOICES=/opt/kokoro/voices-v1.0.bin \
+    HF_HOME=/app/data/.hf_cache
+
+COPY --from=uv /uv /uvx /bin/
+
+# Python 3.10 venv (Ubuntu 24.04's system Python is 3.12, so no `--system`).
+# The interpreter lives under /opt so it ships with the image.
+ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python \
+    UV_LINK_MODE=copy \
+    VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:$PATH
+RUN uv venv /opt/venv --python 3.10
+
+WORKDIR /app
+COPY docker/arm64-torch-overrides.txt /tmp/arm64-torch-overrides.txt
+COPY pyproject.toml ./
+COPY backend ./backend
+
+# CUDA torch from the cu130 index, pinned to the aarch64 set in the overrides file.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --torch-backend cu130 --override /tmp/arm64-torch-overrides.txt . \
+        kokoro-onnx soundfile
+
+# Swap in the CUDA CTranslate2. Must come AFTER the project deps, or the
+# CPU-only PyPI wheel that faster-whisper pulls in would replace it again.
+# libctranslate2.so links libcublas/libcublasLt/libcudart.so.13 and libcudnn.so.9; resolve
+# them to torch's pip copies so the process has exactly one of each.
+COPY --from=ct2-build /usr/local/lib/libctranslate2.so* /usr/local/lib/
+COPY --from=ct2-build /wheels /tmp/ct2-wheels
+RUN SITE=/opt/venv/lib/python3.10/site-packages/nvidia \
+    && test -e "$SITE/cu13/lib/libcublas.so.13" && test -e "$SITE/cudnn/lib/libcudnn.so.9" \
+    && printf '%s\n' "$SITE/cu13/lib" "$SITE/cudnn/lib" > /etc/ld.so.conf.d/000-torch-cuda.conf \
+    && ldconfig \
+    && ! ldd /usr/local/lib/libctranslate2.so | grep -q "not found" \
+    && python -c "import torchcodec.decoders" \
+    && uv pip install --reinstall --no-deps /tmp/ct2-wheels/ctranslate2-*.whl \
+    && rm -rf /tmp/ct2-wheels
+
+EXPOSE 8000
+
+# docker-compose.spark.yml overrides this with --host 127.0.0.1 (host network).
+CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]

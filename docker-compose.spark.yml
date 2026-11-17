@@ -1,0 +1,96 @@
+# NVIDIA GB10 (DGX Spark / Lenovo ThinkStation PGX) override. Use via the launcher
+# (scripts/transcibio.sh, which picks it on a GB10) or:
+#   docker compose -f docker-compose.yml -f docker-compose.spark.yml up -d --build
+#
+# Networking: the native Ollama on the device listens on 127.0.0.1:11434 only, so
+# both services use the host network and bind to 127.0.0.1. The app has no auth and
+# must not be reachable from the network. Don't set OLLAMA_HOST=0.0.0.0 to "fix" this.
+#
+#   frontend (nginx)   127.0.0.1:8080   UI + proxies /api -> 127.0.0.1:8000
+#   backend (uvicorn)  127.0.0.1:8000
+#   Ollama (native)    127.0.0.1:11434
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
+    image: transcibio-backend-spark
+    network_mode: host
+    extra_hosts: !reset []
+    command:
+      ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "127.0.0.1", "--port", "8000"]
+    environment:
+      TRANSCIBIO_API_HOST: "127.0.0.1"
+      TRANSCIBIO_OLLAMA_CHAT_URL: "http://127.0.0.1:11434/api/chat"
+      TRANSCIBIO_OLLAMA_GENERATE_URL: "http://127.0.0.1:11434/api/generate"
+      TRANSCIBIO_OLLAMA_TAGS_URL: "http://127.0.0.1:11434/api/tags"
+
+  frontend:
+    network_mode: host
+    ports: !reset []
+    environment:
+      NGINX_LISTEN: "127.0.0.1:8080"
+      BACKEND_UPSTREAM: "127.0.0.1:8000"
+
+  # Optional second transcription engine (docs/spark.md). Neither built nor started by
+  # default: enable with COMPOSE_PROFILES=nemotron in .env (the launcher needs no flag).
+  # Uses the NVFP4 checkpoint (21.6 GB), the smallest variant; memory is shared with the rest
+  # of the system. Weights go to data/models/nemotron/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4:
+  #   hf download nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4 \
+  #     --local-dir data/models/nemotron/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4
+  # First start takes several minutes (FlashInfer JIT; cached under data/models/nemotron/).
+  nemotron:
+    profiles: ["nemotron"]
+    build:
+      context: ./docker/nemotron
+    image: transcibio-nemotron
+    network_mode: host
+    volumes:
+      - ./data/models/nemotron:/models
+    # NVFP4 profile from the model card (incl. the explicit --kv-cache-dtype fp8), except:
+    # 127.0.0.1:8010 (vLLM's default 8000 is the backend), --gpu-memory-utilization 0.3
+    # (= ~36 GiB of 119.6 for weights + cache; the card's 0.85 assumes a dedicated 96 GB GPU,
+    # here the memory is shared with Ollama and the backend), --max-num-seqs 4 (the backend
+    # sends one request at a time).
+    command:
+      - vllm
+      - serve
+      - /models/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4
+      - --served-model-name=nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4
+      - --host=127.0.0.1
+      - --port=8010
+      - --trust-remote-code
+      - --dtype=bfloat16
+      - --kv-cache-dtype=fp8
+      - --gpu-memory-utilization=0.3
+      - --max-model-len=65536
+      - --max-num-batched-tokens=4096
+      - --max-num-seqs=4
+      - --enable-chunked-prefill
+      - --no-enable-prefix-caching
+      - --use-replayssm
+      - --mamba-backend=flashinfer
+      - --mamba-cache-mode=none
+      - --mm-processor-cache-gb=0
+      - --no-async-scheduling
+      - '--limit-mm-per-prompt={"audio":{"count":1,"length":57600000}}'
+      - '--speculative-config={"method":"mtp","num_speculative_tokens":8}'
+      - --reasoning-parser=nemotron_v3
+      - --trust-request-mm-kwargs
+      - --middleware=nemo.collections.speechlm2.vllm.salm.ctc_serving.ctc_timestamp_middleware
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      # FlashInfer JIT-compiles kernels on the first start (cached afterwards under
+      # data/models/nemotron/.flashinfer). Each nvcc job takes several GB of the shared
+      # memory; the default (one per core = 20) is part of what can starve the device.
+      MAX_JOBS: "4"
+    # Never auto-start at boot: the server takes ~50 GB of the 128 GB unified memory. With
+    # `unless-stopped` it came back after a reboot and pushed the device into OOM again.
+    restart: "no"

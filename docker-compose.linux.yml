@@ -1,0 +1,31 @@
+# Linux override, used by the launcher (scripts/transcibio.sh) on Linux machines other than
+# the DGX Spark (docker-compose.spark.yml has the same networking). Manual use:
+#   docker compose -f docker-compose.yml -f docker-compose.linux.yml up -d --build
+#   (add -f docker-compose.cpu.yml at the end without an NVIDIA GPU)
+#
+# Ollama on Linux listens on 127.0.0.1:11434 only, which containers on Docker's bridge
+# network can't reach. On the host network they can, and Ollama stays private (don't set
+# OLLAMA_HOST=0.0.0.0 instead). The app has no login, so it binds to 127.0.0.1 as well.
+#
+#   frontend (nginx)   127.0.0.1:8080   UI + proxies /api -> 127.0.0.1:8000
+#   backend (uvicorn)  127.0.0.1:8000
+#   Ollama (native)    127.0.0.1:11434
+
+services:
+  backend:
+    network_mode: host
+    extra_hosts: !reset []
+    command:
+      ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "127.0.0.1", "--port", "8000"]
+    environment:
+      TRANSCIBIO_API_HOST: "127.0.0.1"
+      TRANSCIBIO_OLLAMA_CHAT_URL: "http://127.0.0.1:11434/api/chat"
+      TRANSCIBIO_OLLAMA_GENERATE_URL: "http://127.0.0.1:11434/api/generate"
+      TRANSCIBIO_OLLAMA_TAGS_URL: "http://127.0.0.1:11434/api/tags"
+
+  frontend:
+    network_mode: host
+    ports: !reset []
+    environment:
+      NGINX_LISTEN: "127.0.0.1:8080"
+      BACKEND_UPSTREAM: "127.0.0.1:8000"

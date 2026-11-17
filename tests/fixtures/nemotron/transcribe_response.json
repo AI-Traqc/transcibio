@@ -1,0 +1,790 @@
+{
+ "_note": "Trimmed real response (first ~37 s of Test_Kunde_Handwerker.wav) from the NVFP4 checkpoint via vLLM + NeMo Speech, speaker prompt with word timestamps. Unused top-level fields removed.",
+ "id": "chatcmpl-ctc-19d459f3200a460894ff2fd98ac3d0ac",
+ "object": "chat.completion",
+ "model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4",
+ "choices": [
+  {
+   "index": 0,
+   "message": {
+    "role": "assistant",
+    "content": "<spk:0> Schmidt Sanitär und Heizung, Schmidt am Apparat, guten Tag. <spk:1> Ja, guten Tag, ähm, Wagner, mein Name. Ich habe Ihre Nummer von einem Bekannten, Herrn Meier. Der war letztes Jahr sehr zufrieden mit dem Badumbau bei sich. <spk:0> Ah, der Herr Meier. Ja, freut mich zu hören. Vielen Dank für den Anruf, Herr Wagner. Worum geht es denn bei Ihnen? <spk:1> Es geht um meine Dusche, die ist wirklich in die Jahre gekommen. Die Duschwanne hat 'nen Sprung und die Schiebetür klemmt ständig. Ich würde das gerne komplett erneuern lassen und hätte da ein paar Fragen. <spk:0> Das ist gar kein Problem, das ist unser tägliches Geschäft. Was schwebt Ihnen denn so vor? Wissen Sie schon, in welche Richtung es gehen soll?",
+    "reasoning": null
+   },
+   "finish_reason": "stop"
+  }
+ ],
+ "usage": {
+  "prompt_tokens": 3346,
+  "total_tokens": 4546,
+  "completion_tokens": 1200,
+  "prompt_tokens_details": null,
+  "completion_tokens_details": {
+   "reasoning_tokens": 0
+  }
+ },
+ "ctc_timestamps": {
+  "words": [
+   {
+    "word": "Schmidt",
+    "start": 0.0,
+    "end": 0.28,
+    "speaker": "0"
+   },
+   {
+    "word": "Sanitär",
+    "start": 0.28,
+    "end": 0.695,
+    "speaker": "0"
+   },
+   {
+    "word": "und",
+    "start": 0.7,
+    "end": 0.8,
+    "speaker": "0"
+   },
+   {
+    "word": "Heizung,",
+    "start": 0.8,
+    "end": 1.183,
+    "speaker": "0"
+   },
+   {
+    "word": "Schmidt",
+    "start": 1.17,
+    "end": 1.459,
+    "speaker": "0"
+   },
+   {
+    "word": "am",
+    "start": 1.48,
+    "end": 1.57,
+    "speaker": "0"
+   },
+   {
+    "word": "Apparat,",
+    "start": 1.57,
+    "end": 2.04,
+    "speaker": "0"
+   },
+   {
+    "word": "guten",
+    "start": 2.04,
+    "end": 2.232,
+    "speaker": "0"
+   },
+   {
+    "word": "Tag.",
+    "start": 2.23,
+    "end": 2.643,
+    "speaker": "0"
+   },
+   {
+    "word": "Ja,",
+    "start": 3.08,
+    "end": 3.397,
+    "speaker": "1"
+   },
+   {
+    "word": "guten",
+    "start": 3.4,
+    "end": 3.637,
+    "speaker": "1"
+   },
+   {
+    "word": "Tag,",
+    "start": 3.65,
+    "end": 4.158,
+    "speaker": "1"
+   },
+   {
+    "word": "ähm,",
+    "start": 4.2,
+    "end": 4.659,
+    "speaker": "1"
+   },
+   {
+    "word": "Wagner,",
+    "start": 4.68,
+    "end": 5.098,
+    "speaker": "1"
+   },
+   {
+    "word": "mein",
+    "start": 5.08,
+    "end": 5.299,
+    "speaker": "1"
+   },
+   {
+    "word": "Name.",
+    "start": 5.32,
+    "end": 5.859,
+    "speaker": "1"
+   },
+   {
+    "word": "Ich",
+    "start": 5.88,
+    "end": 6.029,
+    "speaker": "1"
+   },
+   {
+    "word": "habe",
+    "start": 6.04,
+    "end": 6.259,
+    "speaker": "1"
+   },
+   {
+    "word": "Ihre",
+    "start": 6.28,
+    "end": 6.452,
+    "speaker": "1"
+   },
+   {
+    "word": "Nummer",
+    "start": 6.46,
+    "end": 6.684,
+    "speaker": "1"
+   },
+   {
+    "word": "von",
+    "start": 6.7,
+    "end": 6.836,
+    "speaker": "1"
+   },
+   {
+    "word": "einem",
+    "start": 6.85,
+    "end": 7.069,
+    "speaker": "1"
+   },
+   {
+    "word": "Bekannten,",
+    "start": 7.08,
+    "end": 7.779,
+    "speaker": "1"
+   },
+   {
+    "word": "Herrn",
+    "start": 7.8,
+    "end": 8.029,
+    "speaker": "1"
+   },
+   {
+    "word": "Meier.",
+    "start": 8.04,
+    "end": 8.658,
+    "speaker": "1"
+   },
+   {
+    "word": "Der",
+    "start": 8.68,
+    "end": 8.829,
+    "speaker": "1"
+   },
+   {
+    "word": "war",
+    "start": 8.84,
+    "end": 9.048,
+    "speaker": "1"
+   },
+   {
+    "word": "letztes",
+    "start": 9.08,
+    "end": 9.389,
+    "speaker": "1"
+   },
+   {
+    "word": "Jahr",
+    "start": 9.4,
+    "end": 9.567,
+    "speaker": "1"
+   },
+   {
+    "word": "sehr",
+    "start": 9.57,
+    "end": 9.795,
+    "speaker": "1"
+   },
+   {
+    "word": "zufrieden",
+    "start": 9.8,
+    "end": 10.189,
+    "speaker": "1"
+   },
+   {
+    "word": "mit",
+    "start": 10.2,
+    "end": 10.305,
+    "speaker": "1"
+   },
+   {
+    "word": "dem",
+    "start": 10.3,
+    "end": 10.436,
+    "speaker": "1"
+   },
+   {
+    "word": "Badumbau",
+    "start": 10.45,
+    "end": 10.978,
+    "speaker": "1"
+   },
+   {
+    "word": "bei",
+    "start": 11.0,
+    "end": 11.104,
+    "speaker": "1"
+   },
+   {
+    "word": "sich.",
+    "start": 11.1,
+    "end": 11.442,
+    "speaker": "1"
+   },
+   {
+    "word": "Ah,",
+    "start": 11.97,
+    "end": 12.3,
+    "speaker": "0"
+   },
+   {
+    "word": "der",
+    "start": 12.28,
+    "end": 12.443,
+    "speaker": "0"
+   },
+   {
+    "word": "Herr",
+    "start": 12.46,
+    "end": 12.614,
+    "speaker": "0"
+   },
+   {
+    "word": "Meier.",
+    "start": 12.62,
+    "end": 13.079,
+    "speaker": "0"
+   },
+   {
+    "word": "Ja,",
+    "start": 13.08,
+    "end": 13.34,
+    "speaker": "0"
+   },
+   {
+    "word": "freut",
+    "start": 13.33,
+    "end": 13.645,
+    "speaker": "0"
+   },
+   {
+    "word": "mich",
+    "start": 13.65,
+    "end": 13.806,
+    "speaker": "0"
+   },
+   {
+    "word": "zu",
+    "start": 13.81,
+    "end": 13.89,
+    "speaker": "0"
+   },
+   {
+    "word": "hören.",
+    "start": 13.89,
+    "end": 14.206,
+    "speaker": "0"
+   },
+   {
+    "word": "Vielen",
+    "start": 14.73,
+    "end": 14.966,
+    "speaker": "0"
+   },
+   {
+    "word": "Dank",
+    "start": 14.97,
+    "end": 15.159,
+    "speaker": "0"
+   },
+   {
+    "word": "für",
+    "start": 15.16,
+    "end": 15.279,
+    "speaker": "0"
+   },
+   {
+    "word": "den",
+    "start": 15.28,
+    "end": 15.388,
+    "speaker": "0"
+   },
+   {
+    "word": "Anruf,",
+    "start": 15.4,
+    "end": 15.765,
+    "speaker": "0"
+   },
+   {
+    "word": "Herr",
+    "start": 15.76,
+    "end": 15.877,
+    "speaker": "0"
+   },
+   {
+    "word": "Wagner.",
+    "start": 15.88,
+    "end": 16.477,
+    "speaker": "0"
+   },
+   {
+    "word": "Worum",
+    "start": 16.52,
+    "end": 16.742,
+    "speaker": "0"
+   },
+   {
+    "word": "geht",
+    "start": 16.76,
+    "end": 16.963,
+    "speaker": "0"
+   },
+   {
+    "word": "es",
+    "start": 16.98,
+    "end": 17.068,
+    "speaker": "0"
+   },
+   {
+    "word": "denn",
+    "start": 17.08,
+    "end": 17.217,
+    "speaker": "0"
+   },
+   {
+    "word": "bei",
+    "start": 17.21,
+    "end": 17.308,
+    "speaker": "0"
+   },
+   {
+    "word": "Ihnen?",
+    "start": 17.32,
+    "end": 17.695,
+    "speaker": "0"
+   },
+   {
+    "word": "Es",
+    "start": 18.2,
+    "end": 18.584,
+    "speaker": "1"
+   },
+   {
+    "word": "geht",
+    "start": 18.68,
+    "end": 18.898,
+    "speaker": "1"
+   },
+   {
+    "word": "um",
+    "start": 18.92,
+    "end": 19.065,
+    "speaker": "1"
+   },
+   {
+    "word": "meine",
+    "start": 19.075,
+    "end": 19.362,
+    "speaker": "1"
+   },
+   {
+    "word": "Dusche,",
+    "start": 19.395,
+    "end": 19.972,
+    "speaker": "1"
+   },
+   {
+    "word": "die",
+    "start": 19.98,
+    "end": 20.144,
+    "speaker": "1"
+   },
+   {
+    "word": "ist",
+    "start": 20.17,
+    "end": 20.322,
+    "speaker": "1"
+   },
+   {
+    "word": "wirklich",
+    "start": 20.355,
+    "end": 20.785,
+    "speaker": "1"
+   },
+   {
+    "word": "in",
+    "start": 20.84,
+    "end": 20.95,
+    "speaker": "1"
+   },
+   {
+    "word": "die",
+    "start": 20.95,
+    "end": 21.067,
+    "speaker": "1"
+   },
+   {
+    "word": "Jahre",
+    "start": 21.08,
+    "end": 21.383,
+    "speaker": "1"
+   },
+   {
+    "word": "gekommen.",
+    "start": 21.394,
+    "end": 21.928,
+    "speaker": "1"
+   },
+   {
+    "word": "Die",
+    "start": 22.354,
+    "end": 22.566,
+    "speaker": "1"
+   },
+   {
+    "word": "Duschwanne",
+    "start": 22.6,
+    "end": 23.117,
+    "speaker": "1"
+   },
+   {
+    "word": "hat",
+    "start": 23.12,
+    "end": 23.286,
+    "speaker": "1"
+   },
+   {
+    "word": "'nen",
+    "start": 23.32,
+    "end": 23.473,
+    "speaker": "1"
+   },
+   {
+    "word": "Sprung",
+    "start": 23.474,
+    "end": 23.97,
+    "speaker": "1"
+   },
+   {
+    "word": "und",
+    "start": 24.034,
+    "end": 24.202,
+    "speaker": "1"
+   },
+   {
+    "word": "die",
+    "start": 24.22,
+    "end": 24.401,
+    "speaker": "1"
+   },
+   {
+    "word": "Schiebetür",
+    "start": 24.434,
+    "end": 24.833,
+    "speaker": "1"
+   },
+   {
+    "word": "klemmt",
+    "start": 24.833,
+    "end": 25.222,
+    "speaker": "1"
+   },
+   {
+    "word": "ständig.",
+    "start": 25.233,
+    "end": 25.789,
+    "speaker": "1"
+   },
+   {
+    "word": "Ich",
+    "start": 26.33,
+    "end": 26.62,
+    "speaker": "1"
+   },
+   {
+    "word": "würde",
+    "start": 26.673,
+    "end": 26.86,
+    "speaker": "1"
+   },
+   {
+    "word": "das",
+    "start": 26.87,
+    "end": 26.982,
+    "speaker": "1"
+   },
+   {
+    "word": "gerne",
+    "start": 26.993,
+    "end": 27.307,
+    "speaker": "1"
+   },
+   {
+    "word": "komplett",
+    "start": 27.32,
+    "end": 27.645,
+    "speaker": "1"
+   },
+   {
+    "word": "erneuern",
+    "start": 27.65,
+    "end": 28.032,
+    "speaker": "1"
+   },
+   {
+    "word": "lassen",
+    "start": 28.033,
+    "end": 28.578,
+    "speaker": "1"
+   },
+   {
+    "word": "und",
+    "start": 28.672,
+    "end": 28.998,
+    "speaker": "1"
+   },
+   {
+    "word": "hätte",
+    "start": 29.072,
+    "end": 29.285,
+    "speaker": "1"
+   },
+   {
+    "word": "da",
+    "start": 29.29,
+    "end": 29.394,
+    "speaker": "1"
+   },
+   {
+    "word": "ein",
+    "start": 29.41,
+    "end": 29.485,
+    "speaker": "1"
+   },
+   {
+    "word": "paar",
+    "start": 29.49,
+    "end": 29.691,
+    "speaker": "1"
+   },
+   {
+    "word": "Fragen.",
+    "start": 29.712,
+    "end": 30.175,
+    "speaker": "1"
+   },
+   {
+    "word": "Das",
+    "start": 30.42,
+    "end": 30.602,
+    "speaker": "0"
+   },
+   {
+    "word": "ist",
+    "start": 30.62,
+    "end": 30.754,
+    "speaker": "0"
+   },
+   {
+    "word": "gar",
+    "start": 30.77,
+    "end": 30.914,
+    "speaker": "0"
+   },
+   {
+    "word": "kein",
+    "start": 30.93,
+    "end": 31.13,
+    "speaker": "0"
+   },
+   {
+    "word": "Problem,",
+    "start": 31.152,
+    "end": 31.556,
+    "speaker": "0"
+   },
+   {
+    "word": "das",
+    "start": 31.552,
+    "end": 31.685,
+    "speaker": "0"
+   },
+   {
+    "word": "ist",
+    "start": 31.69,
+    "end": 31.84,
+    "speaker": "0"
+   },
+   {
+    "word": "unser",
+    "start": 31.872,
+    "end": 32.16,
+    "speaker": "0"
+   },
+   {
+    "word": "tägliches",
+    "start": 32.192,
+    "end": 32.661,
+    "speaker": "0"
+   },
+   {
+    "word": "Geschäft.",
+    "start": 32.671,
+    "end": 33.128,
+    "speaker": "0"
+   },
+   {
+    "word": "Was",
+    "start": 33.54,
+    "end": 33.663,
+    "speaker": "0"
+   },
+   {
+    "word": "schwebt",
+    "start": 33.66,
+    "end": 33.968,
+    "speaker": "0"
+   },
+   {
+    "word": "Ihnen",
+    "start": 33.96,
+    "end": 34.103,
+    "speaker": "0"
+   },
+   {
+    "word": "denn",
+    "start": 34.111,
+    "end": 34.33,
+    "speaker": "0"
+   },
+   {
+    "word": "so",
+    "start": 34.351,
+    "end": 34.455,
+    "speaker": "0"
+   },
+   {
+    "word": "vor?",
+    "start": 34.45,
+    "end": 34.81,
+    "speaker": "0"
+   },
+   {
+    "word": "Wissen",
+    "start": 34.831,
+    "end": 35.096,
+    "speaker": "0"
+   },
+   {
+    "word": "Sie",
+    "start": 35.12,
+    "end": 35.227,
+    "speaker": "0"
+   },
+   {
+    "word": "schon,",
+    "start": 35.24,
+    "end": 35.493,
+    "speaker": "0"
+   },
+   {
+    "word": "in",
+    "start": 35.49,
+    "end": 35.561,
+    "speaker": "0"
+   },
+   {
+    "word": "welche",
+    "start": 35.551,
+    "end": 35.83,
+    "speaker": "0"
+   },
+   {
+    "word": "Richtung",
+    "start": 35.83,
+    "end": 36.107,
+    "speaker": "0"
+   },
+   {
+    "word": "es",
+    "start": 36.12,
+    "end": 36.19,
+    "speaker": "0"
+   },
+   {
+    "word": "gehen",
+    "start": 36.19,
+    "end": 36.409,
+    "speaker": "0"
+   },
+   {
+    "word": "soll?",
+    "start": 36.43,
+    "end": 36.713,
+    "speaker": "0"
+   }
+  ],
+  "diarization": [
+   {
+    "speaker": 0,
+    "start": 0.0,
+    "end": 2.63
+   },
+   {
+    "speaker": 1,
+    "start": 3.11,
+    "end": 11.43
+   },
+   {
+    "speaker": 0,
+    "start": 12.02,
+    "end": 14.21
+   },
+   {
+    "speaker": 0,
+    "start": 14.73,
+    "end": 17.66
+   },
+   {
+    "speaker": 1,
+    "start": 18.2,
+    "end": 21.92
+   },
+   {
+    "speaker": 1,
+    "start": 22.41,
+    "end": 25.76
+   },
+   {
+    "speaker": 1,
+    "start": 26.33,
+    "end": 30.17
+   },
+   {
+    "speaker": 0,
+    "start": 30.42,
+    "end": 33.12
+   },
+   {
+    "speaker": 0,
+    "start": 33.54,
+    "end": 36.7
+   }
+  ],
+  "speaker_tag_to_diarization_speaker": {
+   "0": 0,
+   "1": 1
+  },
+  "error": null
+ }
+}

@@ -1,0 +1,8 @@
+# CUDA PyTorch set for NVIDIA GB10 (DGX Spark / ThinkStation PGX, aarch64).
+# Used by Dockerfile.spark with `uv pip install --override`. The cu130 index is the
+# only one with cp310 aarch64 CUDA wheels; torchaudio exists there only as 2.10/2.11,
+# and torchcodec's aarch64 wheels start at 0.11 (which needs torch 2.11).
+torch==2.11.0
+torchaudio==2.11.0
+torchvision==0.26.0
+torchcodec==0.11.*
