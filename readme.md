@@ -58,7 +58,7 @@ Unter Windows reicht ein aktueller NVIDIA-Treiber.
 **1. Herunterladen**
 
 ```bash
-git clone https://github.com/ahmad-alismail/transcibio-app.git
+git clone https://github.com/ahmad-alismail/transcibio.git
 ```
 
 Ohne Git: auf GitHub **Code → Download ZIP** klicken und entpacken.
