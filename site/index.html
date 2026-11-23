@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Transcibio: Aufnahmen verstehen, lokal auf Ihrem Rechner</title>
+    <meta
+      name="description"
+      content="Transcibio schreibt Besprechungen mit, erkennt, wer spricht, und beantwortet Fragen dazu, mit Quellenangabe. Alles läuft auf Ihrem eigenen Rechner. Video, Klick-Demo und Installationshilfe."
+    />
+    <meta name="theme-color" content="#00314b" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:title" content="Transcibio: Aufnahmen verstehen, lokal auf Ihrem Rechner" />
+    <meta
+      property="og:description"
+      content="Transkription mit Sprechern, Chat mit Quellen, Sprachmodus. 100 % lokal. Video, Klick-Demo und Schritt-für-Schritt-Installation."
+    />
+    <meta property="og:url" content="https://ai-traqc.github.io/transcibio/" />
+    <meta property="og:image" content="https://ai-traqc.github.io/transcibio/media/poster.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2300314b'/%3E%3Crect x='6' y='24' width='6.6' height='3' fill='%23004c9b'/%3E%3Crect x='12.6' y='24' width='6.8' height='3' fill='%232e9a7c'/%3E%3Crect x='19.4' y='24' width='6.6' height='3' fill='%23df0513'/%3E%3Cpath d='M9 7h14v3.6h-5.2V21h-3.6V10.6H9z' fill='%23fff'/%3E%3C/svg%3E"
+    />
+    <link rel="preload" href="assets/fonts/plus-jakarta-sans.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/barlow-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="assets/site.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
+    <div class="top-stripe" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="#start" aria-label="Transcibio, zum Seitenanfang">Transcibio</a>
+        <nav class="site-nav" aria-label="Hauptnavigation">
+          <a href="#video">Video</a>
+          <a href="#demo">Ausprobieren</a>
+          <a href="#funktionen">Funktionen</a>
+          <a href="#so-funktionierts">So funktioniert's</a>
+          <a href="#installieren">Installieren</a>
+          <a href="#hilfe">Hilfe</a>
+        </nav>
+        <a class="btn btn-secondary header-gh" href="https://github.com/AI-Traqc/transcibio" target="_blank" rel="noopener">
+          <span data-icon="github"></span>GitHub
+        </a>
+        <button class="btn btn-ghost btn-small menu-toggle" type="button" aria-expanded="false" aria-label="Menü öffnen">
+          <span data-icon="menu"></span>
+        </button>
+      </div>
+    </header>
+
+    <main id="inhalt">
+      <!-- Hero + video -->
+      <section class="hero" id="start">
+        <div class="wrap hero-grid">
+          <div>
+            <span class="pill"><span data-icon="lock"></span>100 % lokal · kostenlos · Open Source</span>
+            <h1>Aus Besprechungen werden <em>Antworten</em>.</h1>
+            <p class="lead">
+              Transcibio schreibt Ihre Aufnahmen mit, erkennt, wer spricht, und beantwortet Fragen dazu,
+              mit Verweis auf die passende Stelle. Alles läuft auf Ihrem eigenen Rechner.
+            </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="#demo"><span data-icon="pointer"></span>Im Browser ausprobieren</a>
+              <a class="btn btn-secondary" href="#installieren"><span data-icon="download"></span>Installieren</a>
+            </div>
+            <ul class="check-list">
+              <li><span data-icon="shield"></span><span>Ihre Aufnahmen verlassen nie Ihren Rechner. Kein Konto, keine Cloud.</span></li>
+              <li><span data-icon="gift"></span><span>Kostenlos und quelloffen (MIT-Lizenz).</span></li>
+              <li><span data-icon="monitor"></span><span>Für Windows, macOS und Linux, mit oder ohne Grafikkarte.</span></li>
+            </ul>
+          </div>
+
+          <div id="video">
+            <div class="video-card">
+              <video
+                id="explainer"
+                controls
+                playsinline
+                preload="metadata"
+                poster="media/poster.jpg"
+                aria-label="Erklärvideo: Transcibio in sechs Minuten"
+              >
+                <source src="media/transcibio-erklaervideo.mp4" type="video/mp4" />
+                Ihr Browser kann das Video nicht abspielen.
+                <a href="media/transcibio-erklaervideo.mp4">Video herunterladen (MP4, 18 MB)</a>.
+              </video>
+              <details class="chapters" open>
+                <summary>Kapitel im Video <span data-icon="chevronDown"></span></summary>
+                <ol>
+                  <li><button type="button" data-seek="0"><span class="t">0:00</span>Worum es geht</button></li>
+                  <li><button type="button" data-seek="22"><span class="t">0:22</span>Alles lokal</button></li>
+                  <li><button type="button" data-seek="38.5"><span class="t">0:38</span>Das Team</button></li>
+                  <li><button type="button" data-seek="62.5"><span class="t">1:02</span>Die Aufnahme</button></li>
+                  <li><button type="button" data-seek="75"><span class="t">1:15</span>Whisper: Sprache wird Text</button></li>
+                  <li><button type="button" data-seek="112"><span class="t">1:52</span>Pyannote: Wer spricht?</button></li>
+                  <li><button type="button" data-seek="157"><span class="t">2:37</span>Zusammenführen</button></li>
+                  <li><button type="button" data-seek="187.5"><span class="t">3:07</span>Ein zweiter Weg: Nemotron</button></li>
+                  <li><button type="button" data-seek="204"><span class="t">3:24</span>Korrigieren</button></li>
+                  <li><button type="button" data-seek="225.5"><span class="t">3:45</span>Protokoll und Chat mit Quellen</button></li>
+                  <li><button type="button" data-seek="285.5"><span class="t">4:45</span>Sprachmodus</button></li>
+                  <li><button type="button" data-seek="321.5"><span class="t">5:21</span>Entwürfe</button></li>
+                  <li><button type="button" data-seek="336"><span class="t">5:36</span>Der Start</button></li>
+                  <li><button type="button" data-seek="344.5"><span class="t">5:44</span>Das ist Transcibio</button></li>
+                </ol>
+              </details>
+            </div>
+            <p class="video-note">Klicken Sie auf ein Kapitel, um direkt dorthin zu springen.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Demo -->
+      <section class="section-alt" id="demo">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Ausprobieren</span>
+            <h2>So sieht Transcibio aus</h2>
+            <p>
+              Eine geführte Tour durch die Oberfläche der App, direkt hier im Browser und ohne Installation.
+              Klicken Sie selbst, oder lassen Sie sich jeden Schritt zeigen.
+            </p>
+          </div>
+          <div class="demo-grid">
+            <aside class="tour" id="demo-tour" aria-live="polite" aria-label="Tour durch das Demo">
+              <noscript><p>Für das Demo bitte JavaScript aktivieren.</p></noscript>
+            </aside>
+            <div>
+              <div class="browser">
+                <div class="browser-bar">
+                  <div class="browser-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                  <div class="browser-url"><span data-icon="lock"></span>localhost:8080</div>
+                  <span class="browser-badge">Demo · Beispieldaten</span>
+                </div>
+                <div id="demo-app">
+                  <noscript><img src="media/poster.jpg" alt="Transcibio" /></noscript>
+                </div>
+              </div>
+              <p class="demo-note">
+                <span data-icon="info"></span>
+                <span>
+                  Das Demo spielt die App nur nach: ein erfundenes Beispielmeeting, vorbereitete Antworten,
+                  keine echte KI und kein Mikrofon. Die Oberfläche der App ist auf Englisch, die Antworten auf Deutsch.
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="funktionen">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Funktionen</span>
+            <h2>Was Transcibio für Sie erledigt</h2>
+            <p>Von der Aufnahme bis zum fertigen Protokoll, ohne dass ein Wort Ihren Rechner verlässt.</p>
+          </div>
+          <div class="feature-grid">
+            <article class="feature" style="--c: #004c9b">
+              <div class="feature-icon"><span data-icon="fileAudio"></span></div>
+              <h3>Transkribieren</h3>
+              <p>Audiodatei hochladen (.mp3, .wav) oder direkt aufnehmen. Sie bekommen den Text mit Zeitangaben und Sprechern.</p>
+            </article>
+            <article class="feature" style="--c: #2e9a7c">
+              <div class="feature-icon"><span data-icon="pencil"></span></div>
+              <h3>Bearbeiten</h3>
+              <p>Wörter korrigieren und Sprecher benennen: Aus „SPEAKER_00“ wird „Frau Keller“, überall im Transkript.</p>
+            </article>
+            <article class="feature" style="--c: #df0513">
+              <div class="feature-icon"><span data-icon="message"></span></div>
+              <h3>Fragen mit Quellen</h3>
+              <p>Fragen in eigenen Worten stellen. Jede Antwort zeigt, aus welcher Stelle der Aufnahme sie stammt.</p>
+            </article>
+            <article class="feature" style="--c: #00314b">
+              <div class="feature-icon"><span data-icon="sparkles"></span></div>
+              <h3>Schnellbuttons</h3>
+              <p>Zusammenfassen, Kernpunkte herausziehen, Sprecher erkennen oder ins Englische übersetzen, mit einem Klick.</p>
+            </article>
+            <article class="feature" style="--c: #004c9b">
+              <div class="feature-icon"><span data-icon="mic"></span></div>
+              <h3>Sprachmodus</h3>
+              <p>Laut fragen und die Antwort hören, ganz ohne Tastatur. Auf Deutsch oder Englisch.</p>
+            </article>
+            <article class="feature" style="--c: #2e9a7c">
+              <div class="feature-icon"><span data-icon="fileText"></span></div>
+              <h3>Entwürfe</h3>
+              <p>Transcibio schlägt E-Mails und Aufgabenlisten vor. Sie prüfen sie und speichern sie als Dateien.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section class="section-alt" id="so-funktionierts">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Hinter den Kulissen</span>
+            <h2>Ein kleines Team aus KI-Modellen</h2>
+            <p>Jedes Modell hat genau eine Aufgabe. Klicken Sie auf eine Station, um mehr zu erfahren.</p>
+          </div>
+          <div class="pipeline" role="tablist" aria-label="Stationen">
+            <button class="pipe-node" role="tab" data-stage="whisper" style="--c: #004c9b" aria-selected="true" aria-controls="pipe-detail">
+              <span class="pipe-step">1 · Hören</span><span class="pipe-name">Whisper</span><span class="pipe-q">Was wird gesagt?</span>
+            </button>
+            <button class="pipe-node" role="tab" data-stage="pyannote" style="--c: #7b2f8e" aria-selected="false" aria-controls="pipe-detail">
+              <span class="pipe-step">2 · Stimmen</span><span class="pipe-name">pyannote</span><span class="pipe-q">Wer spricht?</span>
+            </button>
+            <button class="pipe-node" role="tab" data-stage="merge" style="--c: #df0513" aria-selected="false" aria-controls="pipe-detail">
+              <span class="pipe-step">3 · Ordnen</span><span class="pipe-name">Transkript</span><span class="pipe-q">Wer hat wann was gesagt?</span>
+            </button>
+            <button class="pipe-node" role="tab" data-stage="llm" style="--c: #00314b" aria-selected="false" aria-controls="pipe-detail">
+              <span class="pipe-step">4 · Verstehen</span><span class="pipe-name">Sprachmodell</span><span class="pipe-q">Antworten und Entwürfe</span>
+            </button>
+            <button class="pipe-node" role="tab" data-stage="voice" style="--c: #2e9a7c" aria-selected="false" aria-controls="pipe-detail">
+              <span class="pipe-step">5 · Sprechen</span><span class="pipe-name">Piper &amp; Kokoro</span><span class="pipe-q">Antworten vorlesen</span>
+            </button>
+          </div>
+          <div class="pipe-detail" id="pipe-detail" role="tabpanel" aria-live="polite"></div>
+
+          <div class="privacy">
+            <div>
+              <h3 style="font-size: 30px">100 % lokal. Ihre Meetings bleiben bei Ihnen.</h3>
+              <p>
+                Transcibio braucht keine Cloud und kein Konto. Aufnahmen, Transkripte und Chats liegen im Ordner
+                <code>data/</code> auf Ihrem Rechner. Internet brauchen Sie nur beim ersten Start, um Programme und
+                Modelle herunterzuladen.
+              </p>
+              <p>
+                Die App ist nur auf dem Rechner selbst erreichbar (<code>localhost</code>). Andere Geräte im Netzwerk
+                kommen nicht an Ihre Daten.
+              </p>
+            </div>
+            <div class="machine" aria-label="Schaubild: Alles läuft auf Ihrem Rechner">
+              <span class="machine-label"><span data-icon="monitor"></span>Ihr Rechner</span>
+              <div class="machine-grid">
+                <div class="machine-item"><strong>Browser</strong><span>localhost:8080</span></div>
+                <div class="machine-item"><strong>Transcibio</strong><span>Whisper, pyannote, Stimmen (in Docker)</span></div>
+                <div class="machine-item"><strong>Ollama</strong><span>das Chat-Modell</span></div>
+              </div>
+              <div class="machine-data"><span data-icon="folder"></span><span>Ordner <code>data/</code>: Aufnahmen, Transkripte, Chats, Entwürfe</span></div>
+              <div class="internet"><span class="line" aria-hidden="true"></span><span data-icon="cloud"></span><span>Internet: nur beim ersten Start, um Programme und Modelle zu laden</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Install -->
+      <section id="installieren">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Installieren</span>
+            <h2>Transcibio auf Ihren Rechner holen</h2>
+            <p>
+              Keine Vorkenntnisse nötig. Sie installieren zwei kostenlose Programme (Docker und Ollama), laden
+              Transcibio herunter und starten es per Doppelklick. Den Rest erledigt das Startprogramm.
+            </p>
+          </div>
+          <div class="wizard" id="install-wizard">
+            <noscript>
+              <div class="panel">
+                <p>
+                  Die Schritt-für-Schritt-Anleitung braucht JavaScript. Die Anleitung als Text steht in der
+                  <a href="https://github.com/AI-Traqc/transcibio#installation-und-start">README auf GitHub</a>.
+                </p>
+              </div>
+            </noscript>
+          </div>
+        </div>
+      </section>
+
+      <!-- Help -->
+      <section class="section-alt" id="hilfe">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Hilfe</span>
+            <h2>Wenn etwas nicht klappt</h2>
+            <p>Die häufigsten Stolpersteine und Fragen. Wählen Sie Ihr System oder suchen Sie nach einem Stichwort.</p>
+          </div>
+          <div class="help-grid">
+            <div>
+              <h3>Häufige Probleme</h3>
+              <div class="help-tools">
+                <label class="search"><span data-icon="search"></span><input id="trouble-search" type="search" placeholder="Stichwort, z. B. Docker" aria-label="Probleme durchsuchen" /></label>
+                <div class="chip-row" role="group" aria-label="Nach System filtern">
+                  <button class="chip" type="button" data-os-filter="all" aria-pressed="true">Alle</button>
+                  <button class="chip" type="button" data-os-filter="windows" aria-pressed="false">Windows</button>
+                  <button class="chip" type="button" data-os-filter="mac" aria-pressed="false">macOS</button>
+                  <button class="chip" type="button" data-os-filter="linux" aria-pressed="false">Linux</button>
+                </div>
+              </div>
+              <div class="faq" id="trouble">
+                <details data-os="windows">
+                  <summary>„Der Computer wurde durch Windows geschützt“<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Klicken Sie auf <b>Weitere Informationen</b> und dann auf <b>Trotzdem ausführen</b>. Die Meldung erscheint, weil die Startdatei aus dem Internet stammt.</p></div>
+                </details>
+                <details data-os="mac">
+                  <summary>Die Startdatei lässt sich nicht öffnen<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Öffnen Sie <b>Systemeinstellungen → Datenschutz &amp; Sicherheit</b> und klicken Sie unten bei „Transcibio.command“ auf <b>Dennoch öffnen</b>. Bei älteren macOS-Versionen: Rechtsklick auf die Datei → <b>Öffnen</b> und bestätigen.</p></div>
+                </details>
+                <details data-os="all">
+                  <summary>Der erste Start dauert sehr lange<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Das ist normal. Beim ersten Mal lädt das Startprogramm mehrere Gigabyte und baut die App, das dauert 20 bis 40 Minuten. Lassen Sie das Fenster offen. Ab dem zweiten Start geht es in wenigen Sekunden.</p></div>
+                </details>
+                <details data-os="windows mac linux">
+                  <summary>„Docker laeuft nicht“<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Öffnen Sie Docker Desktop und warten Sie, bis es läuft (Windows: „Engine running“, Mac: Wal-Symbol steht ruhig). Unter Linux: <code>sudo systemctl start docker</code>.</p></div>
+                </details>
+                <details data-os="linux">
+                  <summary>Docker meldet „permission denied“<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Fügen Sie Ihr Konto der Gruppe <code>docker</code> hinzu: <code>sudo usermod -aG docker $USER</code>. Danach ab- und wieder anmelden.</p></div>
+                </details>
+                <details data-os="all">
+                  <summary>„Ollama ist nicht erreichbar“<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Öffnen Sie die Ollama-App. Unter Linux: <code>systemctl start ollama</code> oder <code>ollama serve</code>.</p></div>
+                </details>
+                <details data-os="all">
+                  <summary>Im Transkript stehen keine Sprecher<span data-icon="chevronDown"></span></summary>
+                  <div class="answer">
+                    <p>Dafür braucht Transcibio den Hugging-Face-Token (siehe Installationsschritt „Sprechererkennung freischalten“). Sie können ihn nachträglich eintragen: Öffnen Sie die Datei <code>.env</code> im Projektordner mit einem Texteditor, schreiben Sie <code>HF_TOKEN=hf_…</code> hinein und starten Sie Transcibio neu.</p>
+                    <p>Auf dem Mac ist die Datei versteckt: im Finder <kbd>⌘</kbd>+<kbd>Umschalt</kbd>+<kbd>.</kbd> drücken.</p>
+                  </div>
+                </details>
+                <details data-os="all">
+                  <summary>Die Transkription dauert lange<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Stellen Sie unter <b>Settings → Transcription → Whisper model</b> auf <b>Fast</b>. Am meisten hilft eine NVIDIA-Grafikkarte.</p></div>
+                </details>
+                <details data-os="all">
+                  <summary>Der Rechner wird langsam, der Speicher reicht nicht<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Wählen Sie ein kleineres Chat-Modell oder senken Sie in der Datei <code>.env</code> den Wert <code>TRANSCIBIO_OLLAMA_NUM_CTX</code> (mindestens <code>16384</code>).</p></div>
+                </details>
+                <details data-os="all">
+                  <summary>„Invalid host header“<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Öffnen Sie die App über <code>http://localhost:8080</code>.</p></div>
+                </details>
+                <details data-os="all">
+                  <summary>Der Upload wird abgelehnt<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Möglich sind <code>.mp3</code>- und <code>.wav</code>-Dateien.</p></div>
+                </details>
+                <details data-os="all">
+                  <summary>Die Transkription scheitert mit „Nemotron“<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Der Nemotron-Server läuft nicht. Stellen Sie in den Settings zurück auf Whisper, oder tragen Sie <code>COMPOSE_PROFILES=nemotron</code> in <code>.env</code> ein und starten Sie die App neu. Zeigen die Settings „Server is starting“, lädt der Server noch (etwa 5 Minuten).</p></div>
+                </details>
+                <details data-os="all">
+                  <summary>Etwas anderes<span data-icon="chevronDown"></span></summary>
+                  <div class="answer">
+                    <p>Die Protokolle zeigen, was passiert: <code>scripts/transcibio.sh logs</code> (Windows, in PowerShell: <code>scripts\transcibio.ps1 logs</code>).</p>
+                    <p>Kommen Sie nicht weiter, beschreiben Sie das Problem in einem <a href="https://github.com/AI-Traqc/transcibio/issues" target="_blank" rel="noopener">GitHub-Issue</a>. Fügen Sie dort keine Tokens oder vertraulichen Inhalte ein.</p>
+                  </div>
+                </details>
+                <p class="empty-hint" id="trouble-empty" hidden>Nichts gefunden. Versuchen Sie ein anderes Stichwort.</p>
+              </div>
+            </div>
+
+            <div>
+              <h3>Fragen und Antworten</h3>
+              <div class="faq">
+                <details>
+                  <summary>Was kostet Transcibio?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Nichts. Transcibio ist Open Source unter der MIT-Lizenz. Auch Ollama und die Modelle sind kostenlos, Docker Desktop für Privatpersonen und kleine Unternehmen. Für die Modelle gelten jeweils eigene Nutzungsbedingungen.</p></div>
+                </details>
+                <details>
+                  <summary>Brauche ich Internet?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Nur beim ersten Start, um Programme und Modelle herunterzuladen (mehrere Gigabyte), und für Updates. Danach arbeitet Transcibio offline.</p></div>
+                </details>
+                <details>
+                  <summary>Wo liegen meine Daten?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Im Ordner <code>data/</code> des Projektordners auf Ihrem Rechner: Aufnahmen, Transkripte, Chats und Entwürfe. Es gibt kein Konto und keine Cloud. Löschen können Sie alles in der App unter <b>Settings → Danger zone</b>.</p></div>
+                </details>
+                <details>
+                  <summary>Welche Sprachen versteht Transcibio?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Die Transkription ist auf Deutsch und Englisch ausgelegt; Whisper erkennt die Sprache selbst. Fragen stellen Sie auf Deutsch oder Englisch. Vorlesen und Sprachmodus gibt es auf Deutsch (Piper) und Englisch (Kokoro). Die Oberfläche der App ist auf Englisch.</p></div>
+                </details>
+                <details>
+                  <summary>Wie lang dürfen Aufnahmen sein?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Mit Whisper gibt es keine Längenbegrenzung. Die optionale zweite Engine Nemotron schafft bis zu 60 Minuten pro Aufnahme.</p></div>
+                </details>
+                <details>
+                  <summary>Wie schnell ist die Transkription?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Das hängt vom Rechner ab. Mit einer NVIDIA-Grafikkarte geht es schnell, nur mit dem Prozessor dauert es deutlich länger. In den Settings wählen Sie zwischen Fast (am schnellsten), Balanced und Quality (am genauesten).</p></div>
+                </details>
+                <details>
+                  <summary>Läuft es auch auf dem Mac?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Ja. Die Transkription läuft dort auf dem Prozessor, weil Docker die Apple-Grafik nicht nutzen kann. Das Chat-Modell nutzt sie über Ollama.</p></div>
+                </details>
+                <details>
+                  <summary>Kann mein Team gemeinsam darauf zugreifen?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Transcibio ist für einen Rechner gedacht und hat keine Anmeldung. Deshalb antwortet es nur auf diesem Rechner. Wer den Zugriff von anderen Geräten erlauben möchte, trägt deren Namen in <code>TRANSCIBIO_ALLOWED_HOSTS</code> ein; das Mikrofon braucht dann <code>https://</code>.</p></div>
+                </details>
+                <details>
+                  <summary>Wie entferne ich Transcibio wieder?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Beenden Sie die App und löschen Sie den Projektordner. In Docker Desktop entfernen Sie unter <b>Images</b> die Transcibio-Images, das Chat-Modell mit <code>ollama rm gemma4:e4b</code>. Docker und Ollama deinstallieren Sie wie andere Programme.</p></div>
+                </details>
+                <details>
+                  <summary>Ist das Demo auf dieser Seite die echte App?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Nein. Das Demo spielt die Oberfläche mit einem erfundenen Beispielmeeting und vorbereiteten Antworten nach. Die echte App arbeitet mit Ihren Aufnahmen und einem echten Sprachmodell.</p></div>
+                </details>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="final-cta">
+        <div class="wrap">
+          <h2>Bereit für Ihr erstes Transkript?</h2>
+          <p>Die Installation dauert etwa eine Stunde, das meiste davon lädt von selbst. Danach gehört Ihnen ein Assistent, der nichts weitererzählt.</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="#installieren"><span data-icon="download"></span>Jetzt installieren</a>
+            <a class="btn btn-secondary" href="https://github.com/AI-Traqc/transcibio" target="_blank" rel="noopener"><span data-icon="github"></span>Quellcode auf GitHub</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>
+          <strong style="color: #fff">Transcibio</strong> ·
+          <a href="https://github.com/AI-Traqc/transcibio" target="_blank" rel="noopener">GitHub</a> ·
+          <a href="https://github.com/AI-Traqc/transcibio/blob/main/LICENSE" target="_blank" rel="noopener">MIT-Lizenz</a> ·
+          <a href="assets/fonts/LICENSE-OFL.txt">Schriftlizenzen</a>
+        </p>
+        <p>Keine Cookies, kein Tracking, keine Inhalte von Drittanbietern. Der Installationsfortschritt bleibt nur in Ihrem Browser.</p>
+      </div>
+    </footer>
+
+    <script src="assets/site.js" defer></script>
+    <script src="assets/demo.js" defer></script>
+    <script src="assets/install.js" defer></script>
+  </body>
+</html>

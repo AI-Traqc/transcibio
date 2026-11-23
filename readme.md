@@ -5,6 +5,17 @@ Es zeigt, wer was gesagt hat, und jede Antwort verweist auf die passende Stelle 
 Aufnahme. Alles läuft auf Ihrem eigenen Rechner. Internet brauchen Sie nur einmal, um die
 Modelle herunterzuladen.
 
+<p align="center">
+  <a href="https://ai-traqc.github.io/transcibio/#video">
+    <img src="site/media/readme-preview.jpg" alt="Erklärvideo zu Transcibio ansehen (6 Minuten)" width="720">
+  </a>
+</p>
+
+**[Zur Website](https://ai-traqc.github.io/transcibio/):** Erklärvideo mit Kapiteln, Klick-Demo
+der App im Browser und eine Installationsanleitung Schritt für Schritt, auch ohne
+Vorkenntnisse. Das Video gibt es auch
+[als Datei (MP4, 18 MB)](site/media/transcibio-erklaervideo.mp4).
+
 ## Funktionen
 
 - **Transkribieren:** Audiodatei (`.mp3`, `.wav`) hochladen oder mit dem Mikrofon
@@ -58,7 +69,7 @@ Unter Windows reicht ein aktueller NVIDIA-Treiber.
 **1. Herunterladen**
 
 ```bash
-git clone https://github.com/ahmad-alismail/transcibio.git
+git clone https://github.com/AI-Traqc/transcibio.git
 ```
 
 Ohne Git: auf GitHub **Code → Download ZIP** klicken und entpacken.
@@ -192,6 +203,9 @@ selbst herunter.
 | Etwas anderes | Logs ansehen: `scripts/transcibio.sh logs` (Windows, in PowerShell: `scripts\transcibio.ps1 logs`) |
 
 ## Weitere Dokumentation
+
+- [Website](https://ai-traqc.github.io/transcibio/) (Deutsch): Video, Demo, Installationshilfe.
+  Quelle: [`site/`](site/), veröffentlicht von `.github/workflows/pages.yml`.
 
 Auf Englisch:
 
