@@ -15,6 +15,8 @@ interface AttachMenuProps {
   onStopMeetingRecording: () => void;
   meetingRecordingState: RecordingState;
   meetingElapsedMs: number;
+  // Longest recording the transcription engine accepts (Nemotron: 60 min); null = no limit.
+  meetingMaxMs?: number | null;
   disabled?: boolean;
 }
 
@@ -31,10 +33,12 @@ export function AttachMenu({
   onStopMeetingRecording,
   meetingRecordingState,
   meetingElapsedMs,
+  meetingMaxMs = null,
   disabled,
 }: AttachMenuProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const recording = meetingRecordingState === "recording";
+  const overMax = meetingMaxMs !== null && meetingElapsedMs > meetingMaxMs;
 
   return (
     <>
@@ -56,9 +60,19 @@ export function AttachMenu({
           size="default"
           onClick={onStopMeetingRecording}
           aria-label="Stop recording"
+          title={
+            meetingMaxMs === null
+              ? undefined
+              : overMax
+                ? "Over 60 minutes: Nemotron can't transcribe this. Switch to Whisper in Settings."
+                : "Nemotron transcribes recordings up to 60 minutes."
+          }
         >
           <Square />
-          <span className="font-mono text-xs">{formatElapsed(meetingElapsedMs)}</span>
+          <span className="font-mono text-xs">
+            {formatElapsed(meetingElapsedMs)}
+            {meetingMaxMs !== null ? ` / ${formatElapsed(meetingMaxMs)}` : null}
+          </span>
         </Button>
       ) : (
         <DropdownMenu>

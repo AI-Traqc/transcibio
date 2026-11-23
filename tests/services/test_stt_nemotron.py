@@ -1,5 +1,9 @@
 import base64
+import json
+import os
 import socket
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 import pytest
@@ -8,10 +12,13 @@ from backend.app.services.stt_nemotron import (
     MAX_AUDIO_MS,
     PLAIN_PROMPT,
     SPEAKER_PROMPT,
+    STATUS_STALE_SECONDS,
     NemotronConfig,
     NemotronError,
     NemotronTranscriptionEngine,
     build_request_body,
+    check_nemotron_server,
+    nemotron_status_file,
     parse_response,
 )
 
@@ -208,3 +215,88 @@ def test_voice_input_returns_plain_text_without_speaker_tags(tmp_path: Path):
 def test_voice_input_server_down_raises_instead_of_falling_back(tmp_path: Path):
     with pytest.raises(NemotronError):
         _engine(FakeTransport(should_fail=True)).transcribe_text(tmp_path / "cmd.wav")
+
+
+# --- Server status (Settings) ---------------------------------------------------------
+
+
+class _ModelsHandler(BaseHTTPRequestHandler):
+    def do_GET(self) -> None:  # noqa: N802 - http.server API
+        body = json.dumps({"data": [{"id": "served/model"}]}).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args) -> None:
+        pass
+
+
+@pytest.fixture
+def running_server_url():
+    server = HTTPServer(("127.0.0.1", 0), _ModelsHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    yield f"http://127.0.0.1:{server.server_port}/v1/chat/completions"
+    server.shutdown()
+    server.server_close()
+
+
+def _down_config() -> NemotronConfig:
+    url = f"http://127.0.0.1:{_closed_local_port()}/v1/chat/completions"
+    return NemotronConfig(url=url, model="m", timeout_seconds=1.0)
+
+
+def _write_heartbeat(path: Path, *, started_at: float, written_at: float) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"started_at": started_at}), encoding="utf-8")
+    os.utime(path, (written_at, written_at))
+    return path
+
+
+def test_status_file_lives_in_the_mounted_model_folder(tmp_path: Path):
+    path = nemotron_status_file(tmp_path)
+    assert path == tmp_path / "models" / "nemotron" / ".server-status.json"
+
+
+def test_status_running_when_server_answers(running_server_url, tmp_path: Path):
+    config = NemotronConfig(url=running_server_url, model="m", timeout_seconds=1.0)
+    # A heartbeat is still written while vLLM runs; the answering server wins.
+    status_file = _write_heartbeat(tmp_path / "s.json", started_at=1000.0, written_at=1300.0)
+    status = check_nemotron_server(config, status_file=status_file, now=lambda: 1300.0)
+    assert status["state"] == "running"
+    assert status["reachable"] is True
+    assert status["served_models"] == ["served/model"]
+
+
+def test_status_starting_while_heartbeat_is_fresh_and_port_closed(tmp_path: Path):
+    status_file = _write_heartbeat(tmp_path / "s.json", started_at=1000.0, written_at=1123.0)
+    status = check_nemotron_server(_down_config(), status_file=status_file, now=lambda: 1125.0)
+    assert status["state"] == "starting"
+    assert status["starting_seconds"] == 125
+    assert status["reachable"] is False
+
+
+def test_status_stopped_when_heartbeat_is_stale(tmp_path: Path):
+    written_at = 1000.0
+    status_file = _write_heartbeat(tmp_path / "s.json", started_at=900.0, written_at=written_at)
+    status = check_nemotron_server(
+        _down_config(),
+        status_file=status_file,
+        now=lambda: written_at + STATUS_STALE_SECONDS + 1,
+    )
+    assert status["state"] == "stopped"
+    assert "starting_seconds" not in status
+
+
+def test_status_stopped_without_heartbeat(tmp_path: Path):
+    status = check_nemotron_server(_down_config(), status_file=tmp_path / "missing.json")
+    assert status["state"] == "stopped"
+    assert check_nemotron_server(_down_config())["state"] == "stopped"
+
+
+def test_status_stopped_when_heartbeat_is_unreadable(tmp_path: Path):
+    status_file = tmp_path / "s.json"
+    status_file.write_text("not json", encoding="utf-8")
+    status = check_nemotron_server(_down_config(), status_file=status_file)
+    assert status["state"] == "stopped"

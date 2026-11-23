@@ -187,7 +187,8 @@ selbst herunter.
 | Rechner wird langsam, Speicher reicht nicht | Ein kleineres Chat-Modell wählen oder `TRANSCIBIO_OLLAMA_NUM_CTX` senken (mindestens `16384`). |
 | „Invalid host header“ | Die App über `http://localhost:8080` öffnen. |
 | Upload wird abgelehnt | Nur `.mp3`- und `.wav`-Dateien sind möglich. |
-| Transkription scheitert mit „Nemotron“ | Der Nemotron-Server läuft nicht. In den Settings zurück auf Whisper stellen. |
+| Transkription scheitert mit „Nemotron“ | Der Nemotron-Server läuft nicht. In den Settings zurück auf Whisper stellen oder `COMPOSE_PROFILES=nemotron` in `.env` eintragen und die App neu starten. |
+| Settings zeigt „Server is starting“ | Der Nemotron-Server lädt das Modell (etwa 5 Minuten). Die Anzeige aktualisiert sich selbst; erst danach funktioniert die Transkription. |
 | Etwas anderes | Logs ansehen: `scripts/transcibio.sh logs` (Windows, in PowerShell: `scripts\transcibio.ps1 logs`) |
 
 ## Weitere Dokumentation

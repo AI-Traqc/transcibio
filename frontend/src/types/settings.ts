@@ -56,12 +56,20 @@ export type ProviderModels = {
   error: string;
 };
 
+// "starting": the server process runs but doesn't answer yet (loading, warming up).
+export type NemotronServerState = "running" | "starting" | "stopped";
+
+export type NemotronStatus = ProviderModels & {
+  state: NemotronServerState;
+  starting_seconds?: number | null;
+};
+
 export type ModelsResponse = {
   stt: ProviderModels;
   llm: ProviderModels;
   diarization: ProviderModels;
   // Optional second transcription engine (Nemotron 3.5 Transcribe server).
-  nemotron?: ProviderModels;
+  nemotron?: NemotronStatus;
   // Thinking support per installed chat model.
   llm_thinking?: Record<string, ThinkingSupport>;
 };

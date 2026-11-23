@@ -157,7 +157,7 @@ class AudioStorageService:
         filename: str,
         content_type: str | None,
         fileobj: BinaryIO,
-        max_duration_ms: int = 15 * 60 * 1000,
+        max_duration_ms: int | None = None,  # None: no limit (meeting recordings)
         normalize_sample_rate_hz: int = 16000,
     ) -> StoredAudioUpload:
         target_dir = self._settings.sessions_root / session_id / "audio"
@@ -178,8 +178,10 @@ class AudioStorageService:
         self._write_stream(fileobj, raw_path)
         try:
             raw_meta = self.probe_audio(raw_path)
-            if raw_meta.duration_ms > max_duration_ms:
-                raise AudioValidationError("Recording exceeds maximum duration of 15 minutes.")
+            if max_duration_ms is not None and raw_meta.duration_ms > max_duration_ms:
+                raise AudioValidationError(
+                    f"Recording exceeds maximum duration of {max_duration_ms // 60000} minutes."
+                )
 
             self._convert_to_normalized_wav(
                 input_path=raw_path,

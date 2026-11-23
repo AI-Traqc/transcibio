@@ -14,6 +14,7 @@ interface ComposerProps {
   onStopMeetingRecording: () => void;
   meetingRecordingState: RecordingState;
   meetingElapsedMs: number;
+  meetingMaxMs?: number | null;
   commandRecordingState: RecordingState;
   commandElapsedMs: number;
   onStartCommand: () => void;
@@ -33,6 +34,7 @@ export function Composer({
   onStopMeetingRecording,
   meetingRecordingState,
   meetingElapsedMs,
+  meetingMaxMs,
   commandRecordingState,
   commandElapsedMs,
   onStartCommand,
@@ -58,6 +60,7 @@ export function Composer({
           onStopMeetingRecording={onStopMeetingRecording}
           meetingRecordingState={meetingRecordingState}
           meetingElapsedMs={meetingElapsedMs}
+          meetingMaxMs={meetingMaxMs}
           disabled={disabled}
         />
         <div className="flex-1">

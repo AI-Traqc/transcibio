@@ -32,6 +32,10 @@ const INITIAL_JOB: JobUiState = {
   output: null,
 };
 
+// Nemotron transcribes at most one hour per recording (MAX_AUDIO_MS in stt_nemotron.py);
+// Whisper has no limit.
+const NEMOTRON_MAX_RECORDING_MS = 60 * 60 * 1000;
+
 interface ChatViewProps {
   session: SessionRecord | null;
   settings: SettingsPayload | null;
@@ -331,6 +335,7 @@ export function ChatView({ session, settings, onNewSession, onSessionsRefresh }:
 
   const busy = chat.loading || composerSubmitPendingRef.current;
 
+  const meetingMaxMs = settings?.stt.engine === "nemotron" ? NEMOTRON_MAX_RECORDING_MS : null;
   const composer = useMemo(() => {
     if (!sessionId) return null;
     return (
@@ -343,6 +348,7 @@ export function ChatView({ session, settings, onNewSession, onSessionsRefresh }:
         onStopMeetingRecording={handleStopMeetingRecording}
         meetingRecordingState={meetingRecorder.state}
         meetingElapsedMs={meetingRecorder.elapsedMs}
+        meetingMaxMs={meetingMaxMs}
         commandRecordingState={commandRecorder.state}
         commandElapsedMs={commandRecorder.elapsedMs}
         onStartCommand={handleStartCommand}
@@ -369,6 +375,7 @@ export function ChatView({ session, settings, onNewSession, onSessionsRefresh }:
     chat.draft,
     meetingRecorder.state,
     meetingRecorder.elapsedMs,
+    meetingMaxMs,
     commandRecorder.state,
     commandRecorder.elapsedMs,
     chatDisabled,

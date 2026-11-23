@@ -48,6 +48,12 @@ services:
     network_mode: host
     volumes:
       - ./data/models/nemotron:/models
+      # Heartbeat while vLLM loads and warms up (Settings shows "starting"). Mounted rather
+      # than copied into the image, so changing it needs no rebuild.
+      - ./docker/nemotron/serve.sh:/opt/transcibio/serve.sh:ro
+    # The CUDA image's own entrypoint first (banner, checks), then the heartbeat wrapper,
+    # which runs `command`.
+    entrypoint: ["/opt/nvidia/nvidia_entrypoint.sh", "bash", "/opt/transcibio/serve.sh"]
     # NVFP4 profile from the model card (incl. the explicit --kv-cache-dtype fp8), except:
     # 127.0.0.1:8010 (vLLM's default 8000 is the backend), --gpu-memory-utilization 0.3
     # (= ~36 GiB of 119.6 for weights + cache; the card's 0.85 assumes a dedicated 96 GB GPU,

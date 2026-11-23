@@ -62,6 +62,12 @@ A job records the engine, preset, speaker setting and language when it's queued,
 in Settings doesn't affect running jobs. There is no fallback between engines: if Nemotron is
 selected and its server is down, the job fails with a clear message.
 
+The Nemotron server needs about 5 minutes to load and warm up before it answers. Its container
+runs vLLM through `docker/nemotron/serve.sh`, which refreshes `data/models/nemotron/.server-status.json`
+every 5 s while the process lives. `GET /api/v1/settings/nemotron-status` reports `running`
+(the server answers), `starting` (fresh heartbeat, no answer yet) or `stopped`; the Settings
+dialog polls it until the server runs.
+
 ### Chat
 
 1. Retrieval picks the most relevant transcript segments (or the whole transcript for

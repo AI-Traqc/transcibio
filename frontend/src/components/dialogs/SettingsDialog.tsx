@@ -27,6 +27,7 @@ import { strings } from "@/lib/strings";
 import * as settingsApi from "@/api/settings";
 import type {
   ModelsResponse,
+  NemotronStatus,
   ProcessingProfile,
   ResponseDetail,
   SettingsPatchRequest,
@@ -86,6 +87,48 @@ function SwitchLabel({
   );
 }
 
+// The Nemotron server needs a few minutes to load and warm up; the status refreshes itself
+// while the dialog is open until the server runs.
+const NEMOTRON_POLL_MS = 5000;
+
+function formatElapsed(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function NemotronServerStatus({
+  status,
+  loading,
+}: {
+  status: NemotronStatus | null;
+  loading: boolean;
+}) {
+  if (loading && !status) {
+    return <p className="text-muted-foreground">Checking server…</p>;
+  }
+  if (status?.state === "running") {
+    return <p className="text-green-600 dark:text-green-500">Server is running.</p>;
+  }
+  if (status?.state === "starting") {
+    const elapsed = status.starting_seconds ?? 0;
+    return (
+      <p className="flex items-start gap-1.5 text-amber-600 dark:text-amber-500" role="status">
+        <Loader2 className="mt-0.5 h-3 w-3 shrink-0 animate-spin" />
+        <span>
+          Server is starting: loading the model and warming up ({formatElapsed(elapsed)}). This
+          usually takes about 5 minutes; transcriptions work once it is running.
+        </span>
+      </p>
+    );
+  }
+  return (
+    <p className="text-destructive">
+      Server is not running. To start it, add COMPOSE_PROFILES=nemotron to .env and restart
+      the app.
+    </p>
+  );
+}
+
 export function SettingsDialog({
   open,
   settings,
@@ -112,6 +155,7 @@ export function SettingsDialog({
   const [think, setThink] = useState(false);
   const [diarizationEnabled, setDiarizationEnabled] = useState(true);
   const [sttEngine, setSttEngine] = useState<SttEngine>("whisper-pyannote");
+  const [nemotron, setNemotron] = useState<NemotronStatus | null>(null);
 
   useEffect(() => {
     if (!settings) return;
@@ -138,10 +182,29 @@ export function SettingsDialog({
       .then((data) => {
         setModels(data);
         setLlmModel(data.llm.current);
+        setNemotron(data.nemotron ?? null);
       })
-      .catch(() => setModels(null))
+      .catch(() => {
+        setModels(null);
+        setNemotron(null);
+      })
       .finally(() => setModelsLoading(false));
   }, [open]);
+
+  // Refresh only the Nemotron status (not the whole model list, which would reset choices).
+  const nemotronState = nemotron?.state;
+  useEffect(() => {
+    if (!open || sttEngine !== "nemotron" || modelsLoading || nemotronState === "running") {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      settingsApi
+        .getNemotronStatus()
+        .then(setNemotron)
+        .catch(() => {});
+    }, NEMOTRON_POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [open, sttEngine, modelsLoading, nemotronState]);
 
   const handleDeleteAll = async () => {
     setDeleteBusy(true);
@@ -237,26 +300,24 @@ export function SettingsDialog({
                     <SelectItem value="quality">Quality (large-v3)</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  No length limit for recordings and uploads.
+                </p>
               </div>
             ) : (
               <div className="space-y-1 rounded-md bg-muted/50 p-2 text-xs">
                 <p>
                   <span className="text-muted-foreground">Model: </span>
-                  {models?.nemotron?.current || "Nemotron 3.5 Transcribe"}
+                  {nemotron?.current || "Nemotron 3.5 Transcribe"}
+                </p>
+                <p className="text-muted-foreground">
+                  Transcribes recordings and uploads up to 60 minutes each. For longer audio,
+                  use Whisper.
                 </p>
                 <p className="text-muted-foreground">
                   Also used for voice input (voice commands and voice mode).
                 </p>
-                {modelsLoading ? (
-                  <p className="text-muted-foreground">Checking server…</p>
-                ) : models?.nemotron?.reachable ? (
-                  <p className="text-green-600 dark:text-green-500">Server is running.</p>
-                ) : (
-                  <p className="text-destructive">
-                    Server is not running. Transcriptions fail until it is started
-                    (COMPOSE_PROFILES=nemotron).
-                  </p>
-                )}
+                <NemotronServerStatus status={nemotron} loading={modelsLoading} />
               </div>
             )}
 

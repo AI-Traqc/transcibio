@@ -97,7 +97,7 @@ class FakeVoiceAudioStorageService:
         filename: str,
         content_type: str | None,
         fileobj,
-        max_duration_ms: int,
+        max_duration_ms: int | None = None,
         normalize_sample_rate_hz: int | None,
     ) -> FakeStoredAudio:
         assert session_id == self._session_id

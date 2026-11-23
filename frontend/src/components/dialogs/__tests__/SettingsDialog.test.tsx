@@ -1,12 +1,19 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SettingsDialog } from "@/components/dialogs/SettingsDialog";
-import type { ModelsResponse, SettingsPayload, SttEngine } from "@/types/settings";
+import type {
+  ModelsResponse,
+  NemotronStatus,
+  SettingsPayload,
+  SttEngine,
+} from "@/types/settings";
 
 const getAvailableModels = vi.fn<() => Promise<ModelsResponse>>();
+const getNemotronStatus = vi.fn<() => Promise<NemotronStatus>>();
 vi.mock("@/api/settings", () => ({
   getAvailableModels: () => getAvailableModels(),
+  getNemotronStatus: () => getNemotronStatus(),
 }));
 
 function makeSettings(engine: SttEngine, think = false): SettingsPayload {
@@ -33,23 +40,37 @@ function makeSettings(engine: SttEngine, think = false): SettingsPayload {
   };
 }
 
-function makeModels(current: string, thinking: ModelsResponse["llm_thinking"]): ModelsResponse {
-  const provider = (name: string) => ({
-    provider: name,
-    current: "",
-    available: [],
-    reachable: true,
-    error: "",
-  });
+const provider = (name: string) => ({
+  provider: name,
+  current: "",
+  available: [],
+  reachable: true,
+  error: "",
+});
+
+function makeNemotron(
+  state: NemotronStatus["state"],
+  startingSeconds: number | null = null,
+): NemotronStatus {
+  return {
+    ...provider("nemotron"),
+    current: "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4",
+    reachable: state === "running",
+    state,
+    starting_seconds: startingSeconds,
+  };
+}
+
+function makeModels(
+  current: string,
+  thinking: ModelsResponse["llm_thinking"],
+  nemotron: NemotronStatus = makeNemotron("stopped"),
+): ModelsResponse {
   return {
     stt: provider("faster-whisper"),
     llm: { ...provider("ollama"), current, available: [current] },
     diarization: provider("pyannote"),
-    nemotron: {
-      ...provider("nemotron"),
-      current: "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4",
-      reachable: false,
-    },
+    nemotron,
     llm_thinking: thinking,
   };
 }
@@ -71,7 +92,11 @@ function renderDialog(settings: SettingsPayload) {
 }
 
 describe("SettingsDialog", () => {
-  beforeEach(() => getAvailableModels.mockReset());
+  beforeEach(() => {
+    getAvailableModels.mockReset();
+    getNemotronStatus.mockReset();
+  });
+  afterEach(() => vi.useRealTimers());
 
   it("shows the Whisper model choice only for the Whisper engine", async () => {
     getAvailableModels.mockResolvedValue(makeModels("gemma4:26b", { "gemma4:26b": "optional" }));
@@ -85,6 +110,46 @@ describe("SettingsDialog", () => {
     expect(await screen.findByText(/Server is not running/)).toBeTruthy();
     expect(screen.queryByLabelText("Whisper model")).toBeNull();
     expect(screen.getByText(/NVFP4/)).toBeTruthy();
+  });
+
+  it("shows that the Nemotron server is still loading, with the elapsed time", async () => {
+    getAvailableModels.mockResolvedValue(
+      makeModels("gemma4:26b", {}, makeNemotron("starting", 125)),
+    );
+    renderDialog(makeSettings("nemotron"));
+    expect(await screen.findByText(/loading the model and warming up \(2:05\)/)).toBeTruthy();
+    expect(screen.queryByText(/Server is not running/)).toBeNull();
+  });
+
+  it("refreshes the Nemotron status until the server is running", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    getAvailableModels.mockResolvedValue(
+      makeModels("gemma4:26b", {}, makeNemotron("starting", 10)),
+    );
+    getNemotronStatus
+      .mockResolvedValueOnce(makeNemotron("starting", 15))
+      .mockResolvedValue(makeNemotron("running"));
+    renderDialog(makeSettings("nemotron"));
+    await screen.findByText(/\(0:10\)/);
+
+    await act(() => vi.advanceTimersByTimeAsync(5000));
+    expect(await screen.findByText(/\(0:15\)/)).toBeTruthy();
+
+    await act(() => vi.advanceTimersByTimeAsync(5000));
+    expect(await screen.findByText("Server is running.")).toBeTruthy();
+
+    // Running: no more polling.
+    await act(() => vi.advanceTimersByTimeAsync(20000));
+    expect(getNemotronStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it("doesn't poll the Nemotron status for the Whisper engine", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    getAvailableModels.mockResolvedValue(makeModels("gemma4:26b", {}));
+    renderDialog(makeSettings("whisper-pyannote"));
+    await screen.findByLabelText("Whisper model");
+    await act(() => vi.advanceTimersByTimeAsync(20000));
+    expect(getNemotronStatus).not.toHaveBeenCalled();
   });
 
   it("lets the thinking switch be changed for models that support it", async () => {

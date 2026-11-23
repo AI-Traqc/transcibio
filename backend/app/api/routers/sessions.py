@@ -734,7 +734,6 @@ def upload_session_recording(
             filename=filename,
             content_type=audio_file.content_type,
             fileobj=audio_file.file,
-            max_duration_ms=15 * 60 * 1000,
             normalize_sample_rate_hz=16000,
         )
     except AudioValidationError as exc:

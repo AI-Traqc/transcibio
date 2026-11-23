@@ -14,7 +14,7 @@ from backend.app.services.local_llm import (
     resolve_ollama_think,
 )
 from backend.app.services.model_discovery import ModelDiscoveryService
-from backend.app.services.stt_nemotron import check_nemotron_server
+from backend.app.services.stt_nemotron import check_nemotron_server, nemotron_status_file
 from backend.app.store import SQLiteStore
 
 router = APIRouter(prefix="/settings", tags=["settings"])
@@ -221,12 +221,18 @@ class ProviderModelsResponse(BaseModel):
     error: str = ""
 
 
+class NemotronStatusResponse(ProviderModelsResponse):
+    # "starting": the server process runs but doesn't answer yet (loading, warming up).
+    state: Literal["running", "starting", "stopped"] = "stopped"
+    starting_seconds: int | None = None
+
+
 class ModelsResponse(BaseModel):
     stt: ProviderModelsResponse
     llm: ProviderModelsResponse
     diarization: ProviderModelsResponse
     # Optional second transcription engine; `reachable` mirrors the Ollama check.
-    nemotron: ProviderModelsResponse
+    nemotron: NemotronStatusResponse
     # Thinking support per installed chat model: "optional" | "always" | "none".
     llm_thinking: dict[str, str] = {}
 
@@ -244,19 +250,33 @@ def get_available_models(
     stt = discovery.get_stt_models(current_model=stt_current)
     llm = discovery.get_llm_models(current_model=llm_config.model_name)
     diarization = discovery.get_diarization_info(enabled=effective.stt.diarization_enabled_default)
-    nemotron = check_nemotron_server()
     llm_thinking = discovery.get_llm_thinking_support(llm.available) if llm.reachable else {}
 
     return ModelsResponse(
         stt=ProviderModelsResponse(**vars(stt)),
         llm=ProviderModelsResponse(**vars(llm)),
         diarization=ProviderModelsResponse(**vars(diarization)),
-        nemotron=ProviderModelsResponse(
-            provider="nemotron",
-            current=str(nemotron["model"]),
-            available=list(nemotron["served_models"]),
-            reachable=bool(nemotron["reachable"]),
-            error=str(nemotron.get("error", "")),
-        ),
+        nemotron=_nemotron_status(app_settings),
         llm_thinking=llm_thinking,
+    )
+
+
+@router.get("/nemotron-status", response_model=NemotronStatusResponse)
+def get_nemotron_status(
+    app_settings: Annotated[AppSettings, Depends(get_app_settings)],
+) -> NemotronStatusResponse:
+    """Polled by the Settings dialog until the server is running."""
+    return _nemotron_status(app_settings)
+
+
+def _nemotron_status(app_settings: AppSettings) -> NemotronStatusResponse:
+    status = check_nemotron_server(status_file=nemotron_status_file(app_settings.data_root))
+    return NemotronStatusResponse(
+        provider="nemotron",
+        current=str(status["model"]),
+        available=list(status["served_models"]),
+        reachable=bool(status["reachable"]),
+        error=str(status.get("error", "")),
+        state=status["state"],
+        starting_seconds=status.get("starting_seconds"),
     )

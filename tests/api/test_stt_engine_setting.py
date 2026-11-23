@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+import socket
+import time
 from pathlib import Path
 
 import pytest
@@ -12,6 +15,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from backend.app.api.routers import sessions as sessions_router  # noqa: E402
 from backend.app.api.routers import settings as settings_router  # noqa: E402
 from backend.app.config import AppSettings  # noqa: E402
+from backend.app.services.stt_nemotron import nemotron_status_file  # noqa: E402
 from backend.app.services.transcription_orchestrator import resolve_stt_engine  # noqa: E402
 from backend.app.store import SQLiteStore  # noqa: E402
 
@@ -166,3 +170,29 @@ def test_explicit_request_values_win_over_settings(client_and_state):
     )
     job = runtime.enqueued[-1]
     assert job["stt_preset"] == "fast" and job["diarization_enabled"] is True
+
+
+def _closed_local_port() -> int:
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+def test_nemotron_status_reports_starting_from_heartbeat(client_and_state, monkeypatch):
+    client, _, _ = client_and_state
+    url = f"http://127.0.0.1:{_closed_local_port()}/v1/chat/completions"
+    monkeypatch.setenv("TRANSCIBIO_NEMOTRON_URL", url)
+
+    stopped = client.get("/api/v1/settings/nemotron-status").json()
+    assert stopped["state"] == "stopped"
+    assert stopped["reachable"] is False
+    assert stopped["starting_seconds"] is None
+
+    data_root = client.app.state.settings.data_root
+    status_file = nemotron_status_file(data_root)
+    status_file.parent.mkdir(parents=True)
+    status_file.write_text(json.dumps({"started_at": time.time() - 90}), encoding="utf-8")
+
+    starting = client.get("/api/v1/settings/nemotron-status").json()
+    assert starting["state"] == "starting"
+    assert 89 <= starting["starting_seconds"] <= 95

@@ -44,6 +44,11 @@ DEFAULT_MODEL = "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4"
 DEFAULT_TIMEOUT_SECONDS = 1800.0
 # The model accepts recordings up to one hour per request; chunking is out of scope.
 MAX_AUDIO_MS = 60 * 60 * 1000
+# Heartbeat written by docker/nemotron/serve.sh every 5 s while the vLLM process lives, in
+# the mounted data/models/nemotron/. Lets Settings tell "starting" from "stopped" before
+# the port answers. Older than this counts as stopped (container killed without cleanup).
+STATUS_FILE_NAME = ".server-status.json"
+STATUS_STALE_SECONDS = 30.0
 
 # Prompts from the model card ("Prompt Guide"). The speaker prompt lists 4 tags as
 # documented; training mixtures had up to 8 speakers.
@@ -117,17 +122,50 @@ def _urllib_transport(url: str, body: dict[str, Any], timeout: float) -> dict[st
         raise NemotronError("Nemotron server returned invalid JSON.") from exc
 
 
-def check_nemotron_server(config: NemotronConfig | None = None) -> dict[str, Any]:
-    """Reachability for Settings/health: `GET /v1/models`, like the Ollama tags check."""
+def nemotron_status_file(data_root: Path) -> Path:
+    """Where the backend sees the container's `/models/<STATUS_FILE_NAME>`."""
+    return data_root / "models" / "nemotron" / STATUS_FILE_NAME
+
+
+def _server_started_at(status_file: Path | None, now: float) -> float | None:
+    """Start time (epoch seconds) of a live server process, from its heartbeat file.
+
+    None when the file is missing, unreadable or stale (container stopped or killed)."""
+    if status_file is None:
+        return None
+    try:
+        if now - status_file.stat().st_mtime > STATUS_STALE_SECONDS:
+            return None
+        return float(json.loads(status_file.read_text(encoding="utf-8"))["started_at"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def check_nemotron_server(
+    config: NemotronConfig | None = None,
+    *,
+    status_file: Path | None = None,
+    now: Callable[[], float] = time.time,
+) -> dict[str, Any]:
+    """Server status for Settings: `GET /v1/models`, like the Ollama tags check.
+
+    `state` is "running" when the server answers, "starting" while `status_file` shows a
+    live server process that doesn't answer yet (vLLM loads the model and warms up for a few
+    minutes before it opens its port), otherwise "stopped".
+    """
     config = config or NemotronConfig.from_env()
     status: dict[str, Any] = {"models_url": config.models_url, "model": config.model}
     try:
         with urllib.request.urlopen(config.models_url, timeout=2) as response:  # noqa: S310
             data = json.loads(response.read().decode("utf-8"))
         served = [str(item.get("id")) for item in data.get("data", []) if item.get("id")]
-        status.update(reachable=True, served_models=served)
+        status.update(reachable=True, served_models=served, state="running")
     except Exception as exc:  # noqa: BLE001 - any failure means "not reachable"
-        status.update(reachable=False, served_models=[], error=str(exc))
+        status.update(reachable=False, served_models=[], error=str(exc), state="stopped")
+        current = now()
+        started_at = _server_started_at(status_file, current)
+        if started_at is not None:
+            status.update(state="starting", starting_seconds=max(0, int(current - started_at)))
     return status
 
 
@@ -312,8 +350,9 @@ class NemotronTranscriptionEngine:
         if duration_ms is not None and duration_ms > MAX_AUDIO_MS:
             minutes = duration_ms / 60000
             raise NemotronError(
-                f"Recording is {minutes:.0f} min long; Nemotron accepts at most 60 min per "
-                "request. Use Whisper + pyannote for longer recordings."
+                f"This recording is {minutes:.0f} minutes long. Nemotron transcribes up to "
+                "60 minutes per recording. Switch to Whisper in Settings (no length limit) "
+                "and upload it again."
             )
         config = self._config or NemotronConfig.from_env()
         body = build_request_body(
@@ -367,12 +406,14 @@ __all__ = [
     "DEFAULT_URL",
     "ENGINE_NAME",
     "MAX_AUDIO_MS",
+    "STATUS_FILE_NAME",
     "NemotronConfig",
     "NemotronError",
     "NemotronTranscriptionEngine",
     "build_request_body",
     "check_nemotron_server",
     "encode_audio_as_flac",
+    "nemotron_status_file",
     "parse_response",
     "text_from_response",
 ]

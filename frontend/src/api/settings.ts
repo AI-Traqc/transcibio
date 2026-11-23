@@ -1,6 +1,7 @@
 import { apiFetch, apiFetchJson } from "./client";
 import type {
   ModelsResponse,
+  NemotronStatus,
   SettingsPatchRequest,
   SettingsPayload,
 } from "@/types/settings";
@@ -17,4 +18,8 @@ export function patchSettings(
 
 export function getAvailableModels(): Promise<ModelsResponse> {
   return apiFetch<ModelsResponse>("/api/v1/settings/models");
+}
+
+export function getNemotronStatus(): Promise<NemotronStatus> {
+  return apiFetch<NemotronStatus>("/api/v1/settings/nemotron-status");
 }
