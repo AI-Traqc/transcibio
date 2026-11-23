@@ -51,16 +51,17 @@ jederzeit unter **Settings → Chat** wechseln.
 |---|---|---|
 | Arbeitsspeicher | 16 GB | 32 GB |
 | Freier Speicherplatz | 30 GB | 50 GB |
-| Grafikkarte | nicht nötig (läuft auf der CPU, langsamer) | NVIDIA mit 8 GB oder mehr |
+| Grafikkarte | NVIDIA mit 8 GB Grafikspeicher | NVIDIA mit 32 GB oder mehr (größere Modelle) |
 
-Läuft unter Windows 10/11, macOS und Linux (64 Bit).
+Läuft unter Windows 10/11 und Linux (64 Bit) mit NVIDIA-Grafikkarte. Ohne NVIDIA-Grafikkarte
+läuft Transcibio nicht, deshalb werden Macs nicht unterstützt.
 Installieren Sie vorher:
 
-1. [Docker Desktop](https://docs.docker.com/get-docker/), unter Linux genügt Docker Engine
+1. [Docker Desktop](https://docs.docker.com/get-docker/) (Windows), unter Linux Docker Engine
    ([Warum Docker?](#warum-docker))
 2. [Ollama](https://ollama.com/download) für das Chat-Modell
 
-Mit NVIDIA-Grafikkarte unter Linux zusätzlich das
+Unter Linux zusätzlich das
 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
 Unter Windows reicht ein aktueller NVIDIA-Treiber.
 
@@ -79,7 +80,6 @@ Ohne Git: auf GitHub **Code → Download ZIP** klicken und entpacken.
 | System | Doppelklick auf |
 |---|---|
 | Windows | `Transcibio.bat` |
-| macOS | `Transcibio.command` |
 | Linux | Desktop-Symbol **Transcibio** |
 
 Die Dateien liegen im Projektordner. Unter Linux legen Sie das Symbol einmal im Terminal
@@ -87,12 +87,12 @@ an: `scripts/transcibio.sh install`.
 
 Ein Fenster zeigt den Start, dann öffnet sich die App im Browser unter
 **<http://localhost:8080>**. Solange das Fenster offen ist, läuft Transcibio.
-**Beenden:** im Fenster **Strg+C** drücken (Mac: **control+C**). Das gibt den
+**Beenden:** im Fenster **Strg+C** drücken. Das gibt den
 Arbeitsspeicher frei; Ihre Sitzungen bleiben erhalten.
 
 Als Symbol auf dem Desktop: unter Windows Rechtsklick auf die `.bat`-Datei →
 **Senden an → Desktop (Verknüpfung erstellen)** (Windows 11: zuerst
-**Weitere Optionen anzeigen**), unter macOS die `.command`-Datei ins Dock ziehen.
+**Weitere Optionen anzeigen**).
 
 **Beim ersten Start** richtet das Startskript alles selbst ein:
 
@@ -104,16 +104,18 @@ Als Symbol auf dem Desktop: unter Windows Rechtsklick auf die `.bat`-Datei →
    Genauigkeitsstufe in den Settings sofort nutzbar.
 
 Danach startet die App in wenigen Sekunden. Laufen Docker Desktop oder Ollama nicht,
-startet das Skript sie (Windows, macOS).
+startet das Skript sie (Windows).
 
-**Ein Klick auf jedem Gerät.** Das Startskript erkennt das Gerät und wählt die passende
-Einrichtung:
+**Ein Klick, passende Einrichtung.** Das Startskript erkennt das Gerät und wählt die
+Modelle:
 
-| Gerät | Transkription läuft auf | Chat-Modell |
+| Gerät | Chat-Modell | Whisper zu Beginn |
 |---|---|---|
-| Laptop oder PC mit NVIDIA-GPU | GPU | `gemma4:e4b` |
-| Laptop oder PC ohne NVIDIA-GPU | CPU | `gemma4:e4b` |
-| Mac | CPU (Docker kann die Apple-GPU nicht nutzen, das Chat-Modell nutzt sie über Ollama) | `gemma4:e4b` |
+| Laptop oder PC mit NVIDIA-Grafikkarte | `gemma4:e4b` | `medium` |
+| NVIDIA DGX Spark | `gemma4:26b` | `large-v3` |
+
+Im Startfenster steht dann „mit NVIDIA-GPU“ (oder „DGX Spark“). Steht dort „ohne GPU“, ist
+der NVIDIA-Treiber (Windows) oder das NVIDIA Container Toolkit (Linux) nicht eingerichtet.
 
 **Aktualisieren:** `git pull`, dann wie gewohnt starten. Mit ZIP: neue Version entpacken
 und den Ordner `data/` sowie die Datei `.env` hineinkopieren. In `data/` liegen Ihre
@@ -178,7 +180,7 @@ ihren Modellen. Docker installiert all das in einem Schritt, auf jedem System gl
 getrennt vom Rest des Rechners. Das Startskript bedient Docker für Sie, Docker-Befehle
 müssen Sie nicht kennen.
 
-Ollama läuft außerhalb von Docker. So nutzt es die Grafikkarte direkt (auch auf dem Mac)
+Ollama läuft außerhalb von Docker. So nutzt es die Grafikkarte direkt
 und steht auch anderen Programmen zur Verfügung.
 
 **Ohne Docker:** Die [Entwicklungsumgebung](docs/development.md) startet die App direkt
@@ -190,11 +192,11 @@ selbst herunter.
 | Problem | Lösung |
 |---|---|
 | Windows: „Der Computer wurde durch Windows geschützt“ | **Weitere Informationen → Trotzdem ausführen** |
-| macOS: Die Startdatei lässt sich nicht öffnen | Rechtsklick auf die Datei, **Öffnen** wählen und bestätigen. |
 | „Docker laeuft nicht“ | Docker Desktop öffnen und warten, bis es läuft. Linux: `sudo systemctl start docker` |
 | „Ollama ist nicht erreichbar“ | Die Ollama-App öffnen. Linux: `systemctl start ollama` |
 | Keine Sprecher erkannt | `HF_TOKEN` eintragen und den Modellbedingungen zustimmen ([Sprechererkennung](#sprechererkennung)). |
-| Transkription dauert lange | **Settings → Transcription → Whisper model** auf **Fast** stellen. Am meisten hilft eine NVIDIA-GPU. |
+| Startfenster zeigt „ohne GPU“ | Die Grafikkarte wird nicht erkannt, die Transkription wird sehr langsam. Windows: aktuellen NVIDIA-Treiber installieren. Linux: `nvidia-smi` prüfen und das NVIDIA Container Toolkit einrichten. Danach neu starten. |
+| Transkription dauert lange | Prüfen, ob im Startfenster „mit NVIDIA-GPU“ steht. Schneller: **Settings → Transcription → Whisper model** auf **Fast** stellen. |
 | Rechner wird langsam, Speicher reicht nicht | Ein kleineres Chat-Modell wählen oder `TRANSCIBIO_OLLAMA_NUM_CTX` senken (mindestens `16384`). |
 | „Invalid host header“ | Die App über `http://localhost:8080` öffnen. |
 | Upload wird abgelehnt | Nur `.mp3`- und `.wav`-Dateien sind möglich. |

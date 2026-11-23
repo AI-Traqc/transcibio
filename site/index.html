@@ -36,7 +36,7 @@
         <a class="brand" href="#start" aria-label="Transcibio, zum Seitenanfang">Transcibio</a>
         <nav class="site-nav" aria-label="Hauptnavigation">
           <a href="#video">Video</a>
-          <a href="#demo">Ausprobieren</a>
+          <a href="#demo">Demo</a>
           <a href="#funktionen">Funktionen</a>
           <a href="#so-funktionierts">So funktioniert's</a>
           <a href="#installieren">Installieren</a>
@@ -63,13 +63,13 @@
               mit Verweis auf die passende Stelle. Alles läuft auf Ihrem eigenen Rechner.
             </p>
             <div class="hero-cta">
-              <a class="btn btn-primary" href="#demo"><span data-icon="pointer"></span>Im Browser ausprobieren</a>
+              <a class="btn btn-primary" href="#demo"><span data-icon="pointer"></span>Demo ausprobieren</a>
               <a class="btn btn-secondary" href="#installieren"><span data-icon="download"></span>Installieren</a>
             </div>
             <ul class="check-list">
               <li><span data-icon="shield"></span><span>Ihre Aufnahmen verlassen nie Ihren Rechner. Kein Konto, keine Cloud.</span></li>
               <li><span data-icon="gift"></span><span>Kostenlos und quelloffen (MIT-Lizenz).</span></li>
-              <li><span data-icon="monitor"></span><span>Für Windows, macOS und Linux, mit oder ohne Grafikkarte.</span></li>
+              <li><span data-icon="monitor"></span><span>Für Windows- und Linux-Rechner mit NVIDIA-Grafikkarte.</span></li>
             </ul>
           </div>
 
@@ -87,27 +87,7 @@
                 Ihr Browser kann das Video nicht abspielen.
                 <a href="media/transcibio-erklaervideo.mp4">Video herunterladen (MP4, 18 MB)</a>.
               </video>
-              <details class="chapters" open>
-                <summary>Kapitel im Video <span data-icon="chevronDown"></span></summary>
-                <ol>
-                  <li><button type="button" data-seek="0"><span class="t">0:00</span>Worum es geht</button></li>
-                  <li><button type="button" data-seek="22"><span class="t">0:22</span>Alles lokal</button></li>
-                  <li><button type="button" data-seek="38.5"><span class="t">0:38</span>Das Team</button></li>
-                  <li><button type="button" data-seek="62.5"><span class="t">1:02</span>Die Aufnahme</button></li>
-                  <li><button type="button" data-seek="75"><span class="t">1:15</span>Whisper: Sprache wird Text</button></li>
-                  <li><button type="button" data-seek="112"><span class="t">1:52</span>Pyannote: Wer spricht?</button></li>
-                  <li><button type="button" data-seek="157"><span class="t">2:37</span>Zusammenführen</button></li>
-                  <li><button type="button" data-seek="187.5"><span class="t">3:07</span>Ein zweiter Weg: Nemotron</button></li>
-                  <li><button type="button" data-seek="204"><span class="t">3:24</span>Korrigieren</button></li>
-                  <li><button type="button" data-seek="225.5"><span class="t">3:45</span>Protokoll und Chat mit Quellen</button></li>
-                  <li><button type="button" data-seek="285.5"><span class="t">4:45</span>Sprachmodus</button></li>
-                  <li><button type="button" data-seek="321.5"><span class="t">5:21</span>Entwürfe</button></li>
-                  <li><button type="button" data-seek="336"><span class="t">5:36</span>Der Start</button></li>
-                  <li><button type="button" data-seek="344.5"><span class="t">5:44</span>Das ist Transcibio</button></li>
-                </ol>
-              </details>
             </div>
-            <p class="video-note">Klicken Sie auf ein Kapitel, um direkt dorthin zu springen.</p>
           </div>
         </div>
       </section>
@@ -116,11 +96,20 @@
       <section class="section-alt" id="demo">
         <div class="wrap">
           <div class="section-head">
-            <span class="eyebrow">Ausprobieren</span>
+            <span class="eyebrow">Vorführung</span>
             <h2>So sieht Transcibio aus</h2>
             <p>
-              Eine geführte Tour durch die Oberfläche der App, direkt hier im Browser und ohne Installation.
-              Klicken Sie selbst, oder lassen Sie sich jeden Schritt zeigen.
+              Eine geführte Vorführung, direkt hier im Browser. <b>Die App-Oberfläche ist anklickbar:</b> Klicken Sie
+              selbst hinein und folgen Sie der gelben Markierung „Hier klicken“. Oder lassen Sie sich jeden Schritt
+              mit „Zeig es mir“ vorführen.
+            </p>
+          </div>
+          <div class="demo-banner" role="note">
+            <span data-icon="alert"></span>
+            <p>
+              <b>Nur zur Veranschaulichung, keine echte Nutzung.</b> Hier läuft keine KI, und nichts wird
+              aufgenommen, hochgeladen oder gespeichert. Das Meeting ist erfunden, die Antworten sind vorbereitet.
+              Mit Ihren eigenen Aufnahmen arbeitet nur die installierte App.
             </p>
           </div>
           <div class="demo-grid">
@@ -132,7 +121,7 @@
                 <div class="browser-bar">
                   <div class="browser-dots" aria-hidden="true"><span></span><span></span><span></span></div>
                   <div class="browser-url"><span data-icon="lock"></span>localhost:8080</div>
-                  <span class="browser-badge">Demo · Beispieldaten</span>
+                  <span class="browser-badge">Vorführung · erfundene Daten</span>
                 </div>
                 <div id="demo-app">
                   <noscript><img src="media/poster.jpg" alt="Transcibio" /></noscript>
@@ -141,8 +130,8 @@
               <p class="demo-note">
                 <span data-icon="info"></span>
                 <span>
-                  Das Demo spielt die App nur nach: ein erfundenes Beispielmeeting, vorbereitete Antworten,
-                  keine echte KI und kein Mikrofon. Die Oberfläche der App ist auf Englisch, die Antworten auf Deutsch.
+                  Eine Nachbildung der App zur Vorführung: erfundenes Meeting, vorbereitete Antworten, keine KI,
+                  kein Mikrofon. Die Oberfläche der echten App ist auf Englisch, die Antworten auf Deutsch.
                 </span>
               </p>
             </div>
@@ -254,8 +243,9 @@
             <span class="eyebrow">Installieren</span>
             <h2>Transcibio auf Ihren Rechner holen</h2>
             <p>
-              Keine Vorkenntnisse nötig. Sie installieren zwei kostenlose Programme (Docker und Ollama), laden
-              Transcibio herunter und starten es per Doppelklick. Den Rest erledigt das Startprogramm.
+              Keine Vorkenntnisse nötig. Sie brauchen einen Windows- oder Linux-Rechner mit NVIDIA-Grafikkarte.
+              Sie installieren zwei kostenlose Programme (Docker und Ollama), laden Transcibio herunter und starten
+              es per Doppelklick. Den Rest erledigt das Startprogramm.
             </p>
           </div>
           <div class="wizard" id="install-wizard">
@@ -287,7 +277,6 @@
                 <div class="chip-row" role="group" aria-label="Nach System filtern">
                   <button class="chip" type="button" data-os-filter="all" aria-pressed="true">Alle</button>
                   <button class="chip" type="button" data-os-filter="windows" aria-pressed="false">Windows</button>
-                  <button class="chip" type="button" data-os-filter="mac" aria-pressed="false">macOS</button>
                   <button class="chip" type="button" data-os-filter="linux" aria-pressed="false">Linux</button>
                 </div>
               </div>
@@ -296,17 +285,13 @@
                   <summary>„Der Computer wurde durch Windows geschützt“<span data-icon="chevronDown"></span></summary>
                   <div class="answer"><p>Klicken Sie auf <b>Weitere Informationen</b> und dann auf <b>Trotzdem ausführen</b>. Die Meldung erscheint, weil die Startdatei aus dem Internet stammt.</p></div>
                 </details>
-                <details data-os="mac">
-                  <summary>Die Startdatei lässt sich nicht öffnen<span data-icon="chevronDown"></span></summary>
-                  <div class="answer"><p>Öffnen Sie <b>Systemeinstellungen → Datenschutz &amp; Sicherheit</b> und klicken Sie unten bei „Transcibio.command“ auf <b>Dennoch öffnen</b>. Bei älteren macOS-Versionen: Rechtsklick auf die Datei → <b>Öffnen</b> und bestätigen.</p></div>
-                </details>
                 <details data-os="all">
                   <summary>Der erste Start dauert sehr lange<span data-icon="chevronDown"></span></summary>
                   <div class="answer"><p>Das ist normal. Beim ersten Mal lädt das Startprogramm mehrere Gigabyte und baut die App, das dauert 20 bis 40 Minuten. Lassen Sie das Fenster offen. Ab dem zweiten Start geht es in wenigen Sekunden.</p></div>
                 </details>
-                <details data-os="windows mac linux">
+                <details data-os="windows linux">
                   <summary>„Docker laeuft nicht“<span data-icon="chevronDown"></span></summary>
-                  <div class="answer"><p>Öffnen Sie Docker Desktop und warten Sie, bis es läuft (Windows: „Engine running“, Mac: Wal-Symbol steht ruhig). Unter Linux: <code>sudo systemctl start docker</code>.</p></div>
+                  <div class="answer"><p>Öffnen Sie Docker Desktop und warten Sie, bis unten links „Engine running“ steht. Unter Linux: <code>sudo systemctl start docker</code>.</p></div>
                 </details>
                 <details data-os="linux">
                   <summary>Docker meldet „permission denied“<span data-icon="chevronDown"></span></summary>
@@ -320,12 +305,15 @@
                   <summary>Im Transkript stehen keine Sprecher<span data-icon="chevronDown"></span></summary>
                   <div class="answer">
                     <p>Dafür braucht Transcibio den Hugging-Face-Token (siehe Installationsschritt „Sprechererkennung freischalten“). Sie können ihn nachträglich eintragen: Öffnen Sie die Datei <code>.env</code> im Projektordner mit einem Texteditor, schreiben Sie <code>HF_TOKEN=hf_…</code> hinein und starten Sie Transcibio neu.</p>
-                    <p>Auf dem Mac ist die Datei versteckt: im Finder <kbd>⌘</kbd>+<kbd>Umschalt</kbd>+<kbd>.</kbd> drücken.</p>
                   </div>
                 </details>
                 <details data-os="all">
+                  <summary>Das Startfenster zeigt „ohne GPU“<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Dann erkennt Transcibio Ihre NVIDIA-Grafikkarte nicht, und die Transkription wird sehr langsam. Unter Windows: aktuellen NVIDIA-Treiber installieren und neu starten. Unter Linux: Treiber prüfen (<code>nvidia-smi</code>) und das NVIDIA Container Toolkit einrichten (siehe Installation). Danach Transcibio neu starten; im Startfenster steht dann „mit NVIDIA-GPU“.</p></div>
+                </details>
+                <details data-os="all">
                   <summary>Die Transkription dauert lange<span data-icon="chevronDown"></span></summary>
-                  <div class="answer"><p>Stellen Sie unter <b>Settings → Transcription → Whisper model</b> auf <b>Fast</b>. Am meisten hilft eine NVIDIA-Grafikkarte.</p></div>
+                  <div class="answer"><p>Prüfen Sie zuerst, ob im Startfenster „mit NVIDIA-GPU“ steht (siehe oben). Schneller wird es außerdem mit <b>Settings → Transcription → Whisper model → Fast</b>.</p></div>
                 </details>
                 <details data-os="all">
                   <summary>Der Rechner wird langsam, der Speicher reicht nicht<span data-icon="chevronDown"></span></summary>
@@ -379,11 +367,15 @@
                 </details>
                 <details>
                   <summary>Wie schnell ist die Transkription?<span data-icon="chevronDown"></span></summary>
-                  <div class="answer"><p>Das hängt vom Rechner ab. Mit einer NVIDIA-Grafikkarte geht es schnell, nur mit dem Prozessor dauert es deutlich länger. In den Settings wählen Sie zwischen Fast (am schnellsten), Balanced und Quality (am genauesten).</p></div>
+                  <div class="answer"><p>Das hängt von der Länge der Aufnahme und von Ihrer Grafikkarte ab. In den Settings wählen Sie zwischen Fast (am schnellsten), Balanced und Quality (am genauesten).</p></div>
+                </details>
+                <details>
+                  <summary>Welche Grafikkarte brauche ich?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Eine NVIDIA-Grafikkarte mit mindestens 8 GB Grafikspeicher. Ohne sie läuft Transcibio nicht. Mit mehr Grafikspeicher (ab 32 GB) können Sie größere, genauere Modelle wählen.</p></div>
                 </details>
                 <details>
                   <summary>Läuft es auch auf dem Mac?<span data-icon="chevronDown"></span></summary>
-                  <div class="answer"><p>Ja. Die Transkription läuft dort auf dem Prozessor, weil Docker die Apple-Grafik nicht nutzen kann. Das Chat-Modell nutzt sie über Ollama.</p></div>
+                  <div class="answer"><p>Nein. Transcibio braucht eine NVIDIA-Grafikkarte, und die hat kein Mac. Unterstützt werden Windows 10/11 und Linux.</p></div>
                 </details>
                 <details>
                   <summary>Kann mein Team gemeinsam darauf zugreifen?<span data-icon="chevronDown"></span></summary>
@@ -394,8 +386,8 @@
                   <div class="answer"><p>Beenden Sie die App und löschen Sie den Projektordner. In Docker Desktop entfernen Sie unter <b>Images</b> die Transcibio-Images, das Chat-Modell mit <code>ollama rm gemma4:e4b</code>. Docker und Ollama deinstallieren Sie wie andere Programme.</p></div>
                 </details>
                 <details>
-                  <summary>Ist das Demo auf dieser Seite die echte App?<span data-icon="chevronDown"></span></summary>
-                  <div class="answer"><p>Nein. Das Demo spielt die Oberfläche mit einem erfundenen Beispielmeeting und vorbereiteten Antworten nach. Die echte App arbeitet mit Ihren Aufnahmen und einem echten Sprachmodell.</p></div>
+                  <summary>Ist die Vorführung auf dieser Seite die echte App?<span data-icon="chevronDown"></span></summary>
+                  <div class="answer"><p>Nein. Die Vorführung bildet nur die Oberfläche nach, mit einem erfundenen Meeting und vorbereiteten Antworten. Es läuft keine KI und nichts wird gespeichert. Die echte App arbeitet auf Ihrem Rechner mit Ihren eigenen Aufnahmen.</p></div>
                 </details>
               </div>
             </div>

@@ -23,10 +23,12 @@
   }
 
   const detected = detectOs();
-  let state = { os: detected.os, gpu: null, done: {}, open: null, dl: "zip" };
+  const defaultOs = () => (detected.os === "linux" ? "linux" : "windows");
+  let state = { os: defaultOs(), gpu: null, done: {}, open: null, dl: "zip" };
   try {
     const saved = JSON.parse(window.localStorage.getItem(STORE_KEY) || "null");
     if (saved && typeof saved === "object") state = { ...state, ...saved };
+    if (!["windows", "linux"].includes(state.os)) state.os = defaultOs();
   } catch {
     /* private mode: no saved progress */
   }
@@ -55,12 +57,11 @@
   const callout = (kind, html) =>
     `<div class="callout${kind ? ` is-${kind}` : ""}">${icon(kind === "warn" ? "alert" : kind === "ok" ? "checkCircle" : "info")}<div>${html}</div></div>`;
   const ext = (href, label) => `<a href="${href}" target="_blank" rel="noopener">${label}</a>`;
-  const hasGpu = () => state.gpu === "yes" || state.gpu === "spark";
   const spark = () => state.os === "linux" && state.gpu === "spark";
   const chatModel = () => (spark() ? "gemma4:26b" : "gemma4:e4b");
   const chatSize = () => (spark() ? "18 GB" : "7 GB");
   const paste = () =>
-    ({ windows: "Rechtsklick oder <kbd>Strg</kbd>+<kbd>V</kbd>", mac: "<kbd>⌘</kbd>+<kbd>V</kbd>", linux: "<kbd>Strg</kbd>+<kbd>Umschalt</kbd>+<kbd>V</kbd>" })[state.os];
+    ({ windows: "Rechtsklick oder <kbd>Strg</kbd>+<kbd>V</kbd>", linux: "<kbd>Strg</kbd>+<kbd>Umschalt</kbd>+<kbd>V</kbd>" })[state.os];
 
   const LICENSE_NOTE = callout(
     "",
@@ -100,20 +101,6 @@
           ${callout("ok", "<p>Erscheint „Hello from Docker!“, ist Docker bereit.</p>")}
           <p class="a-muted" style="color:var(--muted);font-size:14px">Gut zu wissen: Mitglieder der Gruppe <code>docker</code> haben weitreichende Rechte auf dem Rechner. Das ist bei Docker so üblich.</p>`,
       });
-    } else if (os === "mac") {
-      list.push({
-        id: "docker",
-        title: "Docker Desktop installieren",
-        sub: "Startet die App in einem abgeschlossenen Bereich",
-        time: "10 Min.",
-        body: `<ol>
-            <li>Prüfen Sie, welchen Chip Ihr Mac hat: Apfel-Menü <b></b> → <b>Über diesen Mac</b>. Steht dort „Apple M1“, „M2“, „M3“ oder höher, wählen Sie <b>Apple Silicon</b>, sonst <b>Intel</b>.</li>
-            <li>Laden Sie ${ext("https://docs.docker.com/desktop/setup/install/mac-install/", "Docker Desktop für Mac")} in der passenden Version herunter.</li>
-            <li>Öffnen Sie ${file("Docker.dmg")} und ziehen Sie Docker in den Ordner <b>Programme</b>.</li>
-            <li>Starten Sie Docker aus dem Ordner Programme und akzeptieren Sie die Nutzungsbedingungen. Eine Anmeldung bei Docker ist nicht nötig.</li>
-            <li>Oben in der Menüleiste erscheint ein Wal-Symbol. Steht es ruhig, läuft Docker.</li>
-          </ol>${LICENSE_NOTE}`,
-      });
     } else {
       list.push({
         id: "docker",
@@ -133,34 +120,32 @@
     }
 
     // 2. GPU (only where it matters)
-    if (os === "windows" && state.gpu !== "no") {
+    if (os === "windows") {
       list.push({
         id: "gpu",
         title: "NVIDIA-Treiber aktualisieren",
-        sub: state.gpu === "yes" ? "Damit die Grafikkarte mitrechnet" : "Nur wenn Sie eine NVIDIA-Grafikkarte haben",
+        sub: "Damit Transcibio die Grafikkarte nutzen kann",
         time: "5 Min.",
-        optional: state.gpu !== "yes",
-        body: `<p>Docker Desktop nutzt Ihre NVIDIA-Grafikkarte automatisch, wenn der Treiber aktuell ist. Das macht die Transkription viel schneller.</p>
+        body: `<p>Docker Desktop gibt Ihre NVIDIA-Grafikkarte an Transcibio weiter, wenn der Treiber aktuell ist.</p>
           <ol>
             <li>Laden Sie den aktuellen Treiber von ${ext("https://www.nvidia.com/de-de/drivers/", "nvidia.com")} (oder über die NVIDIA-App) und installieren Sie ihn.</li>
             <li>Starten Sie den Rechner neu.</li>
           </ol>
-          <p>Mehr ist nicht nötig. Das Startprogramm prüft beim Start selbst, ob die Grafikkarte nutzbar ist, und nimmt sonst den Prozessor.</p>`,
+          <p>Mehr ist nicht nötig. Passt alles, steht beim Start im Startfenster „mit NVIDIA-GPU“.</p>`,
       });
     }
-    if (os === "linux" && state.gpu !== "no" && !spark()) {
+    if (os === "linux" && !spark()) {
       list.push({
         id: "gpu",
         title: "NVIDIA Container Toolkit installieren",
-        sub: state.gpu === "yes" ? "Damit Docker die Grafikkarte nutzen kann" : "Nur wenn Sie eine NVIDIA-Grafikkarte haben",
+        sub: "Damit Docker die Grafikkarte nutzen kann",
         time: "10 Min.",
-        optional: state.gpu !== "yes",
         body: `<ol>
             <li>Prüfen Sie, ob der NVIDIA-Treiber läuft:${code("nvidia-smi")}Erscheint eine Tabelle mit Ihrer Grafikkarte, ist der Treiber da. Sonst installieren Sie ihn zuerst über Ihre Distribution (Ubuntu: „Zusätzliche Treiber“).</li>
             <li>Installieren Sie das ${ext("https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html", "NVIDIA Container Toolkit")} nach der offiziellen Anleitung.</li>
             <li>Verbinden Sie es mit Docker und starten Sie Docker neu:${code(["sudo nvidia-ctk runtime configure --runtime=docker", "sudo systemctl restart docker"])}</li>
           </ol>
-          <p>Das Startprogramm erkennt die Grafikkarte danach selbst. Ohne Toolkit läuft Transcibio auf dem Prozessor, nur langsamer.</p>`,
+          <p>Das Startprogramm erkennt die Grafikkarte danach selbst; im Startfenster steht beim Start „mit NVIDIA-GPU“.</p>`,
       });
     }
     if (spark()) {
@@ -179,10 +164,6 @@
       windows: `<ol>
           <li>Laden Sie ${ext("https://ollama.com/download/windows", "Ollama für Windows")} herunter und installieren Sie es.</li>
           <li>Ollama läuft danach im Hintergrund (Lama-Symbol unten rechts in der Taskleiste). Ein Fenster müssen Sie nicht offen lassen.</li>
-        </ol>`,
-      mac: `<ol>
-          <li>Laden Sie ${ext("https://ollama.com/download/mac", "Ollama für Mac")} herunter, öffnen Sie die Datei und ziehen Sie Ollama in den Ordner <b>Programme</b>.</li>
-          <li>Starten Sie Ollama einmal. Danach läuft es im Hintergrund (Lama-Symbol oben in der Menüleiste).</li>
         </ol>`,
       linux: `<p>Installieren Sie Ollama mit dem Befehl von der ${ext("https://ollama.com/download/linux", "offiziellen Ollama-Seite")}:</p>
         ${code("curl -fsSL https://ollama.com/install.sh | sh")}
@@ -216,12 +197,10 @@
     // 5. Download
     const unzip = {
       windows: `<p>Rechtsklick auf die Datei ${file("transcibio-main.zip")} im Ordner Downloads → <b>Alle extrahieren…</b> → einen Ort wählen, zum Beispiel <b>Dokumente</b>. Es entsteht der Ordner ${file("transcibio-main")}.</p>`,
-      mac: `<p>Doppelklick auf ${file("transcibio-main.zip")} im Ordner Downloads. Verschieben Sie den entstandenen Ordner ${file("transcibio-main")} an einen festen Ort, zum Beispiel in <b>Dokumente</b>.</p>`,
       linux: `<p>Entpacken Sie die Datei, zum Beispiel in Ihren Benutzerordner:</p>${code(["cd ~", "unzip ~/Downloads/transcibio-main.zip"])}`,
     }[os];
     const gitHint = {
       windows: `Git für Windows gibt es unter ${ext("https://git-scm.com/download/win", "git-scm.com")}. Den Befehl geben Sie in PowerShell ein, zum Beispiel im Ordner Dokumente.`,
-      mac: "Git ist auf dem Mac nach dem ersten Aufruf von <code>git</code> im Terminal schnell nachinstalliert.",
       linux: "Git installieren Sie über Ihre Distribution, zum Beispiel <code>sudo apt install git</code>.",
     }[os];
     list.push({
@@ -247,11 +226,6 @@
           <li>Doppelklicken Sie auf ${file("Transcibio.bat")}. Sind Dateiendungen ausgeblendet, heißt sie nur „Transcibio“ (Typ „Windows-Batchdatei“).</li>
           <li>Erscheint „Der Computer wurde durch Windows geschützt“: Klicken Sie auf <b>Weitere Informationen</b> → <b>Trotzdem ausführen</b>.</li>
         </ol>`,
-      mac: `<ol>
-          <li>Öffnen Sie den Ordner ${file(folder())} im Finder.</li>
-          <li>Doppelklicken Sie auf ${file("Transcibio.command")}.</li>
-          <li>Meldet macOS, die Datei könne nicht geöffnet werden: Klicken Sie auf <b>Fertig</b>, öffnen Sie <b>Systemeinstellungen → Datenschutz &amp; Sicherheit</b> und klicken Sie unten bei „Transcibio.command“ auf <b>Dennoch öffnen</b>. Bei älteren macOS-Versionen genügt: Rechtsklick auf die Datei → <b>Öffnen</b>.</li>
-        </ol>`,
       linux: `<p>Öffnen Sie ein Terminal im Projektordner und legen Sie einmal das Desktop-Symbol an:</p>
         ${code([`cd ~/${folder()}`, "scripts/transcibio.sh install"])}
         <p>Ab jetzt starten Sie Transcibio per Doppelklick auf das Symbol <b>Transcibio</b>. Oder direkt im Terminal:</p>
@@ -269,10 +243,9 @@
     });
 
     // 7. Use
-    const stopKey = os === "mac" ? "<kbd>control</kbd>+<kbd>C</kbd>" : "<kbd>Strg</kbd>+<kbd>C</kbd>";
+    const stopKey = "<kbd>Strg</kbd>+<kbd>C</kbd>";
     const shortcut = {
       windows: "<li><b>Symbol auf dem Desktop:</b> Rechtsklick auf <code>Transcibio.bat</code> → <b>Senden an → Desktop (Verknüpfung erstellen)</b>. Unter Windows 11 zuerst <b>Weitere Optionen anzeigen</b>.</li>",
-      mac: "<li><b>Ins Dock:</b> Ziehen Sie <code>Transcibio.command</code> ins Dock, dann reicht künftig ein Klick.</li>",
       linux: "",
     }[os];
     list.push({
@@ -302,14 +275,14 @@
   function terminalScript() {
     const os = state.os;
     const dir = folder();
-    const envPath = { windows: `C:\\Users\\…\\Documents\\${dir}\\.env`, mac: `/Users/…/${dir}/.env`, linux: `/home/…/${dir}/.env` }[os];
-    const label = spark() ? "DGX Spark" : os === "mac" ? "macOS" : hasGpu() ? "mit NVIDIA-GPU" : "ohne GPU";
+    const envPath = { windows: `C:\\Users\\…\\Documents\\${dir}\\.env`, linux: `/home/…/${dir}/.env` }[os];
+    const label = spark() ? "DGX Spark" : "mit NVIDIA-GPU";
     const envLabel = spark() ? "DGX Spark: gemma4:26b, Whisper large-v3" : "Laptop: gemma4:e4b, Whisper medium";
     const model = chatModel();
     const size = spark() ? "18 GB" : "7.2 GB";
     const lines = [];
     const add = (text, cls = "", delay = 450, caption = null) => lines.push({ text, cls, delay, caption });
-    if (os !== "linux") {
+    if (os === "windows") {
       add("==> Starte Docker Desktop ...", "info", 600, "Läuft Docker Desktop noch nicht, startet das Programm es selbst.");
     }
     add(`==> Einstellungen angelegt: ${envPath} (${envLabel})`, "info", 900, "Beim ersten Start legt das Programm die Einstellungsdatei an und wählt passende Modelle für Ihren Rechner.");
@@ -397,17 +370,12 @@
     windows: {
       ram: "Einstellungen → System → Info → „Installierter RAM“.",
       disk: "Explorer → <b>Dieser PC</b>: freier Platz auf Laufwerk C:.",
-      gpu: "Task-Manager (<kbd>Strg</kbd>+<kbd>Umschalt</kbd>+<kbd>Esc</kbd>) → Leistung → GPU. Steht dort „NVIDIA“, haben Sie eine.",
-    },
-    mac: {
-      ram: "Apfel-Menü → <b>Über diesen Mac</b> → „Speicher“.",
-      disk: "Systemeinstellungen → Allgemein → <b>Speicher</b>.",
-      gpu: "Nicht nötig: Docker kann die Apple-Grafik nicht nutzen, die Transkription läuft auf dem Prozessor. Das Chat-Modell nutzt die Grafik über Ollama.",
+      gpu: "Task-Manager (<kbd>Strg</kbd>+<kbd>Umschalt</kbd>+<kbd>Esc</kbd>) → Leistung → GPU. Dort muss „NVIDIA“ stehen; „Dedizierter GPU-Speicher“ zeigt den Grafikspeicher.",
     },
     linux: {
       ram: "Im Terminal <code>free -h</code>, Zeile „Mem“, Spalte „total“.",
       disk: "Im Terminal <code>df -h ~</code>, Spalte „Avail“.",
-      gpu: "Im Terminal <code>nvidia-smi</code>. Erscheint eine Tabelle, haben Sie eine NVIDIA-Grafikkarte mit Treiber.",
+      gpu: "Im Terminal <code>nvidia-smi</code>. Die Tabelle zeigt Name und Speicher der Karte (zum Beispiel 8192MiB). Kommt „command not found“, fehlt der NVIDIA-Treiber oder die Karte.",
     },
   };
 
@@ -427,10 +395,7 @@
     const allDone = doneCount === list.length;
     const req = REQ[os];
     const erkannt = (value) => (detected.os === value && !detected.mobile ? " <small>erkannt</small>" : "");
-    const gpuQuestion =
-      os === "mac"
-        ? ""
-        : `<div class="question">
+    const gpuQuestion = `<div class="question">
             <div class="question-label">Hat Ihr Rechner eine NVIDIA-Grafikkarte?</div>
             <div class="choice-row" role="group">
               ${choice("gpu", "yes", "Ja", "cpu")}
@@ -440,9 +405,9 @@
             </div>
             ${
               state.gpu === "unknown"
-                ? `<div class="question-help"><p>Kein Problem: Das Startprogramm erkennt die Grafikkarte selbst. Wir zeigen den Grafikkarten-Schritt als optional.</p><p>So prüfen Sie es: ${req.gpu}</p></div>`
+                ? `<div class="question-help"><p>So prüfen Sie es: ${req.gpu}</p></div>`
                 : state.gpu === "no"
-                  ? `<div class="question-help"><p>Transcibio läuft dann auf dem Prozessor. Das funktioniert, die Transkription dauert nur länger. Tipp: In den Einstellungen das Whisper-Modell <b>Fast</b> wählen.</p></div>`
+                  ? callout("warn", "<p><b>Ohne NVIDIA-Grafikkarte läuft Transcibio nicht.</b> Sie brauchen einen Windows- oder Linux-Rechner mit NVIDIA-Grafikkarte und mindestens 8 GB Grafikspeicher.</p>")
                   : ""
             }
           </div>`;
@@ -451,12 +416,12 @@
       <div class="panel">
         <h3>1. Ihr Rechner</h3>
         <p class="panel-sub">Zwei kurze Fragen, dann sehen Sie nur die Schritte, die Sie wirklich brauchen.</p>
-        ${detected.mobile ? callout("", "<p>Sie lesen gerade auf dem Handy oder Tablet. Installieren können Sie Transcibio auf einem Windows-PC, Mac oder Linux-Rechner. Wählen Sie unten, welchen Sie haben.</p>") : ""}
+        ${detected.mobile ? callout("", "<p>Sie lesen gerade auf dem Handy oder Tablet. Installieren können Sie Transcibio auf einem Windows- oder Linux-Rechner mit NVIDIA-Grafikkarte. Wählen Sie unten, welchen Sie haben.</p>") : ""}
+        ${detected.os === "mac" && !detected.mobile ? callout("warn", "<p>Sie nutzen gerade einen Mac. Transcibio braucht eine NVIDIA-Grafikkarte und läuft deshalb nicht auf dem Mac. Installieren Sie es auf einem Windows- oder Linux-Rechner mit NVIDIA-Grafikkarte.</p>") : ""}
         <div class="question">
           <div class="question-label">Welches System nutzen Sie?</div>
           <div class="choice-row" role="group">
             ${choice("os", "windows", "Windows 10/11", "windows", erkannt("windows"))}
-            ${choice("os", "mac", "macOS", "apple", erkannt("mac"))}
             ${choice("os", "linux", "Linux", "linux", erkannt("linux"))}
           </div>
         </div>
@@ -466,11 +431,18 @@
             <details><summary>So prüfen Sie das</summary><p>${req.ram}</p></details></div>
           <div class="req"><div class="req-title">Freier Speicherplatz</div><div class="req-value">30 GB <small>empfohlen 50 GB</small></div>
             <details><summary>So prüfen Sie das</summary><p>${req.disk}</p></details></div>
-          <div class="req"><div class="req-title">Grafikkarte</div><div class="req-value">optional <small>NVIDIA ab 8 GB beschleunigt</small></div>
+          <div class="req"><div class="req-title">Grafikkarte (nötig)</div><div class="req-value">NVIDIA <small>mindestens 8 GB Grafikspeicher</small></div>
             <details><summary>So prüfen Sie das</summary><p>${req.gpu}</p></details></div>
         </div>
       </div>
-
+${
+  state.gpu === "no"
+    ? `
+      <div class="panel">
+        <h3>2. Schritt für Schritt</h3>
+        <p class="panel-sub">Die Installationsschritte erscheinen, sobald Ihr Rechner passt. Haben Sie Zugriff auf einen Windows- oder Linux-Rechner mit NVIDIA-Grafikkarte, wählen Sie oben bei der Grafikkarte <b>Ja</b>.</p>
+      </div>`
+    : `
       <div class="panel">
         <div class="progress-head">
           <h3>2. Schritt für Schritt</h3>
@@ -506,7 +478,8 @@
             : ""
         }
         <p class="panel-sub" style="font-size:14px;margin-top:16px">${icon("rotate")} <button type="button" class="link-btn" data-reset style="display:inline;padding:0">Fortschritt zurücksetzen</button></p>
-      </div>`;
+      </div>`
+}`;
 
     const termMount = mountEl.querySelector("#term-mount");
     if (termMount) {
@@ -522,7 +495,6 @@
     const choiceBtn = t.closest("[data-choice]");
     if (choiceBtn) {
       state[choiceBtn.dataset.choice] = choiceBtn.dataset.value;
-      if (choiceBtn.dataset.choice === "os" && state.os === "mac") state.gpu = null;
       if (choiceBtn.dataset.choice === "os" && state.os === "windows" && state.gpu === "spark") state.gpu = null;
       term.i = 0;
       save();
@@ -582,7 +554,7 @@
       return;
     }
     if (t.closest("[data-reset]")) {
-      state = { os: detected.os, gpu: null, done: {}, open: null, dl: "zip" };
+      state = { os: defaultOs(), gpu: null, done: {}, open: null, dl: "zip" };
       term.i = 0;
       save();
       render();

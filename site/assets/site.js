@@ -1,5 +1,5 @@
 /* Shared helpers for the Transcibio website: icons (Lucide, ISC licence), header menu,
-   video chapters, the "how it works" explorer, copy buttons and the help search. */
+   the "how it works" explorer, copy buttons and the help search. */
 (() => {
   "use strict";
 
@@ -142,26 +142,6 @@
         nav.classList.remove("is-open");
         menuButton.setAttribute("aria-expanded", "false");
       }
-    });
-  }
-
-  // Video chapters: jump on click, highlight the current one while playing.
-  const video = document.getElementById("explainer");
-  const chapterButtons = [...document.querySelectorAll("[data-seek]")];
-  if (video && chapterButtons.length) {
-    const times = chapterButtons.map((b) => Number(b.dataset.seek));
-    chapterButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        video.currentTime = Number(button.dataset.seek);
-        video.play().catch(() => {});
-      });
-    });
-    video.addEventListener("timeupdate", () => {
-      let current = 0;
-      times.forEach((t, i) => {
-        if (video.currentTime >= t - 0.25) current = i;
-      });
-      chapterButtons.forEach((b, i) => b.classList.toggle("is-current", i === current));
     });
   }
 

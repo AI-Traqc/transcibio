@@ -316,7 +316,7 @@
         };
       default:
         return {
-          html: "<p>Dazu steht im Transkript nichts.</p><p><em>Hinweis: Dieses Demo kennt nur das Beispielmeeting und einige Fragen dazu. In der App beantwortet das Sprachmodell jede Frage.</em></p>",
+          html: "<p>Dazu steht im Transkript nichts.</p><p><em>Hinweis: Diese Vorführung kennt nur das erfundene Meeting und einige vorbereitete Fragen. In der App beantwortet das Sprachmodell jede Frage.</em></p>",
           cites: [],
           suggest: true,
         };
@@ -972,6 +972,7 @@
       </div>
       <div data-region="overlay"></div>
       <div data-region="toast"></div>
+      <div class="tour-pointer" data-tour-pointer hidden aria-hidden="true">${ic("pointer")}<span>Hier klicken</span></div>
     </div>`;
   }
 
@@ -1456,7 +1457,7 @@
     {
       id: "new",
       title: "Neue Sitzung anlegen",
-      body: "<p>Eine Sitzung gehört zu einer Aufnahme. Darin liegen später das Transkript und Ihr Chat dazu.</p>",
+      body: "<p><b>Die App-Oberfläche ist anklickbar.</b> Klicken Sie direkt hinein, auf die gelb markierte Stelle mit „Hier klicken“. Oder lassen Sie es sich mit „Zeig es mir“ vorführen.</p><p>Alles hier ist nachgestellt: Meeting und Antworten sind erfunden, es läuft keine KI und nichts wird gespeichert.</p><p>In der App gehört eine Sitzung zu einer Aufnahme. Darin liegen später das Transkript und Ihr Chat dazu.</p>",
       hint: () => (S.collapsed ? "Klicken Sie ganz links auf das <b>+</b> (New session)." : "Klicken Sie links auf <b>New session</b>."),
       target: "new-session",
       auto: () => ACTIONS["new-session"](),
@@ -1464,7 +1465,7 @@
     {
       id: "upload",
       title: "Aufnahme hinzufügen",
-      body: "<p>Sie laden eine Audiodatei hoch (<code>.mp3</code> oder <code>.wav</code>) oder nehmen direkt mit dem Mikrofon auf.</p><p>Im Demo nehmen wir ein Beispiel: ein Projektmeeting mit drei Personen, knapp 3 Minuten lang.</p>",
+      body: "<p>Sie laden eine Audiodatei hoch (<code>.mp3</code> oder <code>.wav</code>) oder nehmen direkt mit dem Mikrofon auf.</p><p>In der Vorführung wird nichts hochgeladen. Stattdessen erscheint ein erfundenes Projektmeeting mit drei Personen.</p>",
       hint: () => (S.menu === "attach" ? "Wählen Sie <b>Upload meeting audio</b>." : "Klicken Sie unten im Eingabefeld auf das <b>+</b>."),
       target: () => (S.menu === "attach" ? "upload" : "attach"),
       auto: () => (S.menu === "attach" ? ACTIONS.upload() : ACTIONS.attach()),
@@ -1472,7 +1473,7 @@
     {
       id: "transcribe",
       title: "Das KI-Team arbeitet",
-      body: "<p>Whisper schreibt mit, pyannote erkennt die Stimmen, dann fügt Transcibio beides zusammen. Alles passiert auf Ihrem Rechner, nichts geht ins Internet.</p><p class=\"a-muted\" style=\"color:var(--muted)\">Im Demo stark beschleunigt. In echt hängt die Dauer von Ihrem Rechner ab, mit NVIDIA-Grafikkarte geht es deutlich schneller.</p>",
+      body: "<p>In der App schreibt jetzt Whisper mit, pyannote erkennt die Stimmen, dann fügt Transcibio beides zusammen. Alles passiert auf Ihrem Rechner, nichts geht ins Internet.</p><p style=\"color:var(--muted)\">Hier ist der Fortschritt nur nachgestellt und stark verkürzt. In der App hängt die Dauer von der Länge der Aufnahme und Ihrer Grafikkarte ab.</p>",
       hint: () => (cur() && cur().phase === "recording" ? "Klicken Sie auf den roten <b>Stopp</b>-Knopf, um die Aufnahme zu beenden." : "Einen Moment, das Transkript entsteht …"),
       wait: () => !(cur() && cur().phase === "recording"),
       target: () => (cur() && cur().phase === "recording" ? "stop-recording" : null),
@@ -1512,7 +1513,7 @@
     {
       id: "ask",
       title: "Eine Frage stellen",
-      body: "<p>Fragen Sie in Ihren eigenen Worten, so wie Sie eine Kollegin fragen würden.</p><p>Wir haben eine Frage vorbereitet. Sie können sie auch ändern oder etwas anderes fragen.</p>",
+      body: "<p>Fragen Sie in Ihren eigenen Worten, so wie Sie eine Kollegin fragen würden.</p><p>Wir haben eine Frage vorbereitet. In der Vorführung sind die Antworten vorbereitet; in der App beantwortet das Sprachmodell jede Frage zu Ihrer Aufnahme.</p>",
       enter: () => {
         if (!S.draft.trim()) S.draft = "Bis wann soll der Designentwurf fertig sein?";
         renderRegion("composer");
@@ -1555,7 +1556,7 @@
     {
       id: "voice",
       title: "Sprechen statt tippen",
-      body: "<p>Im Sprachmodus fragen Sie laut und hören die Antwort, ganz ohne Tastatur. Wer dazwischen spricht, unterbricht die Antwort.</p><p>Im Demo spielen wir eine gesprochene Frage vor. Ist der Ton an, liest Ihr Browser die Antwort vor; in der App spricht Piper.</p>",
+      body: "<p>Im Sprachmodus fragen Sie laut und hören die Antwort, ganz ohne Tastatur. Wer dazwischen spricht, unterbricht die Antwort.</p><p>In der Vorführung bleibt das Mikrofon aus: Wir spielen eine erfundene Frage ab. Ist der Ton an, liest Ihr Browser die Antwort vor; in der App spricht Piper.</p>",
       hint: () => (S.voice.on ? "Hören Sie zu …" : "Klicken Sie unten auf <b>Sprachmodus</b>."),
       wait: () => S.voice.on,
       target: () => (S.voice.on ? null : "voice-toggle"),
@@ -1579,7 +1580,7 @@
     {
       id: "done",
       title: "Geschafft!",
-      body: "<p>Sie kennen jetzt das Wichtigste. Probieren Sie ruhig weiter:</p><ul style=\"margin:0 0 8px;padding-left:20px\"><li>eigene Fragen zum Meeting stellen</li><li>die anderen Sprecher benennen (Herr Aydin, Frau Brandt)</li><li>in den Settings „TTS enabled“ einschalten und Antworten vorlesen lassen</li><li>links unten das dunkle Design wählen</li></ul>",
+      body: "<p>Sie kennen jetzt das Wichtigste. Zur Erinnerung: Das war eine Vorführung mit erfundenen Daten. Die echte App arbeitet auf Ihrem Rechner mit Ihren eigenen Aufnahmen.</p><p>Klicken Sie ruhig weiter:</p><ul style=\"margin:0 0 8px;padding-left:20px\"><li>weitere Fragen zum erfundenen Meeting stellen</li><li>die anderen Sprecher benennen (Herr Aydin, Frau Brandt)</li><li>in den Settings „TTS enabled“ einschalten und Antworten vorlesen lassen</li><li>links unten das dunkle Design wählen</li></ul>",
     },
   ];
 
@@ -1649,15 +1650,61 @@
     highlight();
   }
 
+  // "Hier klicken" label next to the highlighted element; hidden when the element is scrolled
+  // out of view. Re-placed on every tick, so it follows scrolling and opening panels.
+  function placePointer() {
+    const ptr = root.querySelector("[data-tour-pointer]");
+    if (!ptr) return;
+    const el = root.querySelector(".tour-target");
+    const frame = root.querySelector("[data-a-root]");
+    if (!el || !frame) {
+      ptr.hidden = true;
+      return;
+    }
+    // Covered by an open dialog or panel: the element can't be clicked, so no label.
+    const overlay = root.querySelector('[data-region="overlay"]');
+    if (overlay && overlay.childElementCount && !overlay.contains(el)) {
+      ptr.hidden = true;
+      return;
+    }
+    const fr = frame.getBoundingClientRect();
+    const er = el.getBoundingClientRect();
+    const clip = el.closest(".a-thread, .a-sheet, .a-dialog, .a-list");
+    const cr = clip ? clip.getBoundingClientRect() : fr;
+    if (er.width === 0 || er.bottom < cr.top + 4 || er.top > cr.bottom - 4) {
+      ptr.hidden = true;
+      return;
+    }
+    ptr.hidden = false;
+    const pw = ptr.offsetWidth;
+    const ph = ptr.offsetHeight;
+    let top = er.top - fr.top - ph - 12;
+    let below = false;
+    if (top < 6) {
+      top = er.bottom - fr.top + 12;
+      below = true;
+    }
+    const center = er.left - fr.left + er.width / 2;
+    const left = Math.max(6, Math.min(center - pw / 2, fr.width - pw - 6));
+    ptr.style.top = `${top}px`;
+    ptr.style.left = `${left}px`;
+    ptr.style.setProperty("--arrow-x", `${Math.max(14, Math.min(center - left, pw - 14))}px`);
+    ptr.classList.toggle("is-below", below);
+  }
+
   function highlight(opts = {}) {
     root.querySelectorAll(".tour-target").forEach((el) => el.classList.remove("tour-target"));
-    if (!tour.active) return;
+    const done = () => placePointer();
+    if (!tour.active) return done();
     const step = currentStep();
     const name = typeof step.target === "function" ? step.target() : step.target;
-    if (!name) return;
+    if (!name) return done();
     const el = [...root.querySelectorAll(`[data-tour="${name}"]`)].find((e) => e.offsetParent !== null && !e.disabled);
-    if (!el) return;
+    if (!el) return done();
+    const overlay = root.querySelector('[data-region="overlay"]');
+    if (overlay && overlay.childElementCount && !overlay.contains(el)) return done();
     el.classList.add("tour-target");
+    placePointer();
     const key = `${tour.idx}:${name}`;
     if (Date.now() - lastUserAct < 4000 && scrolledFor !== key && !el.closest(".a-thread")) {
       const r = el.getBoundingClientRect();
@@ -1692,12 +1739,13 @@
       <div class="tour-progress" aria-hidden="true">${STEPS.slice(0, total)
         .map((_, i) => `<span class="${i < tour.idx ? "done" : i === tour.idx ? "now" : ""}"></span>`)
         .join("")}</div>
+      <div class="tour-tag">${icon("info")}Vorführung · erfundene Daten</div>
       <div class="tour-count">${isDone ? "Tour abgeschlossen" : `Schritt ${tour.idx + 1} von ${total}`}</div>
       <h3>${step.title}</h3>
       <div class="tour-text">${step.body}</div>
       ${hint ? `<div class="tour-hint${waiting ? " is-wait" : ""}">${icon(waiting ? "loader" : "pointer")}<div>${hint}</div></div>` : ""}
       <div class="tour-actions">
-        ${canAuto ? `<button class="btn btn-secondary btn-small" data-tour-act="auto">${icon("forward")}Für mich klicken</button>` : ""}
+        ${canAuto ? `<button class="btn btn-secondary btn-small" data-tour-act="auto">${icon("forward")}Zeig es mir</button>` : ""}
         ${isDone ? `<a class="btn btn-primary btn-small" href="#installieren">${icon("download")}Jetzt installieren</a><button class="btn btn-secondary btn-small" data-tour-act="restart">${icon("rotate")}Tour neu starten</button>` : ""}
       </div>
       <div class="tour-foot">
@@ -1753,7 +1801,10 @@
   S = freshState();
   mount();
   renderAll();
-  window.setInterval(tick, 200);
+  window.setInterval(() => {
+    tick();
+    placePointer();
+  }, 200);
   window.addEventListener("resize", () => {
     if (narrow() && !S.collapsed) {
       S.collapsed = true;
